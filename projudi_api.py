@@ -26,6 +26,8 @@ import requests
 import json
 import PyPDF2
 import io
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import Select
 
 from session_pool import SessionPool
 
@@ -38,7 +40,9 @@ SERVENTIA_PADRAO = os.getenv('DEFAULT_SERVENTIA', 'Advogados - OAB/Matrícula: 2
 
 class ProjudiAPI:
     def __init__(self):
-        self.session_pool = SessionPool(max_sessions=6)  # Aumentado para 6 sessões
+        # Configurar pool de sessões via variável de ambiente
+        max_sessions = None  # Deixar o SessionPool decidir baseado na variável de ambiente
+        self.session_pool = SessionPool(max_sessions=max_sessions)
         self.lock = threading.Lock()
         self.BUSCA_URL = "https://projudi.tjgo.jus.br/BuscaProcesso"
     
@@ -137,44 +141,81 @@ class ProjudiAPI:
         return False
     
     def _fallback_strategy(self, session, operation_name, max_attempts=3):
-        """Sistema de fallback automático com múltiplas estratégias"""
-        for attempt in range(max_attempts):
-            try:
-                logger.info(f"🔄 Fallback {operation_name} - Tentativa {attempt + 1}/{max_attempts} na sessão {session['id']}")
+        """Estratégia de fallback robusta com relogin automático"""
+        try:
+            logger.info(f"🔄 Fallback {operation_name} - Tentativa 1/{max_attempts} na sessão {session['id']}")
+            
+            # Verificar se a sessão caiu (não está logada)
+            if self._session_logged_out(session):
+                logger.warning(f"⚠️ Sessão {session['id']} caiu, fazendo relogin completo...")
+                return self._relogin_session(session)
+            
+            # Verificar se a sessão ainda está válida
+            if not self._check_session_health(session):
+                logger.warning(f"⚠️ Sessão {session['id']} não está saudável, tentando refresh...")
+                if not self._refresh_session_auto(session, max_retries=2):
+                    logger.error(f"❌ Falha ao refresh da sessão {session['id']}")
+                    return False
+            
+            # Aguardar um tempo reduzido antes de tentar novamente
+            time.sleep(1)
+            
+            # Tentar a operação novamente
+            return True
                 
-                # Estratégia 1: Refresh simples
-                if attempt == 0:
-                    try:
-                        session['driver'].refresh()
-                        time.sleep(5)
-                        return True
-                    except:
-                        pass
-                
-                # Estratégia 2: Limpar cookies e tentar novamente
-                elif attempt == 1:
-                    try:
-                        session['driver'].delete_all_cookies()
-                        time.sleep(3)
-                        session['driver'].refresh()
-                        time.sleep(5)
-                        return True
-                    except:
-                        pass
-                
-                # Estratégia 3: Refresh completo da sessão
-                elif attempt == 2:
-                    if self._refresh_session_auto(session, max_retries=3):
-                        return True
-                
-            except Exception as e:
-                logger.error(f"❌ Fallback {operation_name} falhou na tentativa {attempt + 1}: {e}")
-                time.sleep(2)
-        
+        except Exception as e:
+            logger.error(f"❌ Erro no fallback {operation_name}: {e}")
         return False
     
+    def _session_logged_out(self, session):
+        """Verifica se a sessão caiu (não está logada)"""
+        try:
+            current_url = session['driver'].current_url
+            page_source = session['driver'].page_source
+            
+            # Verificar se está na página de login ou se há elementos de login
+            login_indicators = [
+                "Usuario" in page_source,
+                "Senha" in page_source,
+                "login" in current_url.lower(),
+                "usuario" in current_url.lower(),
+                "entrar" in page_source.lower(),
+                "acessar" in page_source.lower()
+            ]
+            
+            return any(login_indicators)
+        except:
+            return True  # Se não conseguir verificar, assume que caiu
+    
+    def _relogin_session(self, session):
+        """Faz relogin completo da sessão com refresh e verificação"""
+        try:
+            logger.info(f"🔄 Iniciando relogin da sessão {session['id']}")
+            
+            # 1. Fazer refresh da página de login
+            session['driver'].get("https://projudi.tjgo.jus.br/LogOn?PaginaAtual=-200")
+            time.sleep(3)
+            
+            # 2. Verificar se já está logado (se não há campos de login)
+            page_source = session['driver'].page_source
+            if "Usuario" not in page_source and "Senha" not in page_source:
+                logger.info(f"✅ Sessão {session['id']} já está logada")
+                return True
+            
+            # 3. Fazer login completo
+            if self.fazer_login(session):
+                logger.info(f"✅ Relogin da sessão {session['id']} realizado com sucesso")
+                return True
+            else:
+                logger.error(f"❌ Falha no relogin da sessão {session['id']}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Erro no relogin da sessão {session['id']}: {e}")
+            return False
+    
     def _robust_operation(self, session, operation_func, operation_name, *args, **kwargs):
-        """Executa uma operação com fallback automático"""
+        """Executa uma operação com fallback automático otimizado"""
         max_retries = 3
         
         for attempt in range(max_retries):
@@ -185,16 +226,22 @@ class ProjudiAPI:
                 else:
                     logger.warning(f"⚠️ {operation_name} falhou na tentativa {attempt + 1}")
                     if attempt < max_retries - 1:
+                        # Se falhou na primeira tentativa, fazer fallback imediatamente
+                        if attempt == 0:
+                            logger.info(f"🔄 Primeira tentativa falhou, fazendo fallback imediato...")
                         if not self._fallback_strategy(session, operation_name):
                             logger.error(f"❌ Fallback para {operation_name} falhou")
                             continue
             except Exception as e:
                 logger.error(f"❌ Erro em {operation_name} (tentativa {attempt + 1}): {e}")
                 if attempt < max_retries - 1:
+                    # Se deu erro na primeira tentativa, fazer fallback imediatamente
+                    if attempt == 0:
+                        logger.info(f"🔄 Primeira tentativa com erro, fazendo fallback imediato...")
                     if not self._fallback_strategy(session, operation_name):
                         logger.error(f"❌ Fallback para {operation_name} falhou")
                         continue
-                    time.sleep(2)
+                    time.sleep(1)  # Reduzido de 2s para 1s
         
         return False
     
@@ -381,19 +428,40 @@ class ProjudiAPI:
             return False
     
     def buscar_por_cpf(self, session, cpf):
-        """Buscar processos por CPF"""
+        """Busca processos por CPF - VERSÃO CORRIGIDA COM CAMPO CORRETO"""
         try:
-            logger.info(f"🔍 Buscando por CPF na sessão {session['id']}: {cpf}")
+            logger.info(f"🔍 Buscando processos do CPF na sessão {session['id']}: {cpf}")
             
             # Navegar para página de busca
             session['driver'].get(self.BUSCA_URL)
-            time.sleep(5)
+            time.sleep(3)
             
-            # Aguardar campo CPF (usando os mesmos seletores da v2)
+            # Aguardar campo CPF com múltiplos seletores
+            cpf_field = None
+            seletores_cpf = [
+                (By.NAME, "CpfCnpjParte"),  # Campo correto baseado no HTML
+                (By.ID, "CpfCnpjParte"),    # ID do campo
+                (By.NAME, "CPF"),           # Fallback para nome genérico
+                (By.XPATH, "//input[@placeholder='CPF/CNPJ da Parte']"),  # Por placeholder
+                (By.XPATH, "//input[contains(@title, 'CPF')]")  # Por título
+            ]
+            
+            for seletor in seletores_cpf:
+                try:
+                    cpf_field = session['wait'].until(
+                        EC.presence_of_element_located(seletor)
+                    )
+                    logger.info(f"✅ Campo CPF encontrado com seletor: {seletor}")
+                    break
+                except:
+                    continue
+            
+            if not cpf_field:
+                logger.error(f"❌ Campo CPF não encontrado na sessão {session['id']}")
+                return False
+            
+            # Preencher CPF
             try:
-                cpf_field = session['wait'].until(
-                    EC.presence_of_element_located((By.XPATH, "//input[contains(@placeholder, 'CPF') or contains(@placeholder, 'CNPJ')]"))
-                )
                 cpf_field.clear()
                 cpf_field.send_keys(cpf)
                 logger.info(f"✅ CPF preenchido na sessão {session['id']}")
@@ -401,9 +469,30 @@ class ProjudiAPI:
                 logger.error(f"❌ Erro ao preencher CPF na sessão {session['id']}: {e}")
                 return False
             
-            # Clicar em buscar (usando os mesmos seletores da v2)
+            # Clicar em buscar com múltiplos seletores
+            btn_buscar = None
+            seletores_botao = [
+                (By.XPATH, "//input[@value='Buscar']"),
+                (By.XPATH, "//input[@type='submit']"),
+                (By.XPATH, "//button[contains(text(), 'Buscar')]"),
+                (By.NAME, "imgSubmeter"),
+                (By.ID, "btnBuscar")
+            ]
+            
+            for seletor in seletores_botao:
+                try:
+                    btn_buscar = session['driver'].find_element(*seletor)
+                    logger.info(f"✅ Botão buscar encontrado com seletor: {seletor}")
+                    break
+                except:
+                    continue
+            
+            if not btn_buscar:
+                logger.error(f"❌ Botão buscar não encontrado na sessão {session['id']}")
+                return False
+            
+            # Clicar no botão
             try:
-                btn_buscar = session['driver'].find_element(By.XPATH, "//input[@value='Buscar']")
                 btn_buscar.click()
                 logger.info(f"✅ Botão buscar clicado na sessão {session['id']}")
             except Exception as e:
@@ -411,7 +500,7 @@ class ProjudiAPI:
                 return False
             
             # Aguardar resultado
-            time.sleep(5)
+            time.sleep(3)
             
             logger.info(f"✅ Busca por CPF concluída com sucesso na sessão {session['id']}")
             return True
@@ -544,11 +633,49 @@ class ProjudiAPI:
             return False
     
     def obter_lista_processos(self, session):
-        """Obtém a lista de processos encontrados"""
+        """Obtém a lista de processos encontrados - VERSÃO CORRIGIDA"""
         try:
             logger.info("📋 Obtendo lista de processos...")
             
-            # Aguardar tabela de resultados com diferentes seletores
+            # Aguardar carregamento da página
+            time.sleep(2)
+            
+            # Verificar se há mensagem de "nenhum resultado" primeiro
+            page_source = session['driver'].page_source.lower()
+            if "nenhum" in page_source or "não encontrado" in page_source or "não foi encontrado" in page_source:
+                logger.info("ℹ️ Nenhum processo encontrado na busca")
+                return []
+            
+            # Verificar se foi redirecionado diretamente para um processo
+            if "corpo_dados_processo" in page_source:
+                logger.info("ℹ️ Redirecionado diretamente para um processo")
+                # Extrair informações do processo atual
+                soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
+                
+                # Tentar encontrar número do processo
+                numero_processo = ""
+                elementos_numero = soup.find_all('span', string=re.compile(r'\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}'))
+                if elementos_numero:
+                    numero_processo = elementos_numero[0].get_text(strip=True)
+                else:
+                    # Tentar encontrar em outros elementos
+                    for elemento in soup.find_all(['span', 'div', 'td']):
+                        texto = elemento.get_text(strip=True)
+                        if re.match(r'\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}', texto):
+                            numero_processo = texto
+                            break
+                
+                if numero_processo:
+                    processo = {
+                        'numero': numero_processo,
+                        'classe': "Processo encontrado",
+                        'assunto': "Processo acessado diretamente",
+                        'id': f"processo_direto_{numero_processo}",
+                        'indice': 1
+                    }
+                    return [processo]
+            
+            # Aguardar tabela de resultados com timeout reduzido
             tabela_encontrada = False
             seletores_tabela = [
                 (By.ID, "Tabela"),
@@ -569,41 +696,6 @@ class ProjudiAPI:
             
             if not tabela_encontrada:
                 logger.warning("❌ Tabela de resultados não encontrada!")
-                # Verificar se há mensagem de "nenhum resultado"
-                page_source = session['driver'].page_source.lower()
-                if "nenhum" in page_source or "não encontrado" in page_source or "não foi encontrado" in page_source:
-                    logger.info("ℹ️ Nenhum processo encontrado na busca")
-                    return []
-                
-                # Verificar se foi redirecionado diretamente para um processo
-                if "corpo_dados_processo" in page_source:
-                    logger.info("ℹ️ Redirecionado diretamente para um processo")
-                    # Extrair informações do processo atual
-                    soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
-                    
-                    # Tentar encontrar número do processo
-                    numero_processo = ""
-                    elementos_numero = soup.find_all('span', string=re.compile(r'\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}'))
-                    if elementos_numero:
-                        numero_processo = elementos_numero[0].get_text(strip=True)
-                    else:
-                        # Tentar encontrar em outros elementos
-                        for elemento in soup.find_all(['span', 'div', 'td']):
-                            texto = elemento.get_text(strip=True)
-                            if re.match(r'\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}', texto):
-                                numero_processo = texto
-                                break
-                    
-                    if numero_processo:
-                        processo = {
-                            'numero': numero_processo,
-                            'classe': "Processo encontrado",
-                            'assunto': "Processo acessado diretamente",
-                            'id': f"processo_direto_{numero_processo}",
-                            'indice': 1
-                        }
-                        return [processo]
-                
                 return []
             
             # Extrair dados da tabela
@@ -658,7 +750,7 @@ class ProjudiAPI:
                             'classe': classe,
                             'assunto': assunto,
                             'id': id_processo,
-                            'indice': len(processos) + 1  # Adicionar índice baseado na posição na lista
+                            'indice': len(processos) + 1
                         }
                         processos.append(processo)
             
@@ -792,11 +884,11 @@ class ProjudiAPI:
             return False
     
     def extrair_movimentacoes(self, session, processo_info, limite_movimentacoes=None, extrair_anexos=False):
-        """Extrai as movimentações de um processo"""
+        """Extrai as movimentações de um processo - VERSÃO OTIMIZADA"""
         try:
             logger.info("📋 Extraindo movimentações...")
             
-            # Aguardar tabela de movimentações com diferentes seletores
+            # Aguardar carregamento da página com timeout otimizado
             tabela_encontrada = False
             seletores_tabela = [
                 (By.ID, "TabelaArquivos"),  # Tabela principal de movimentações
@@ -807,35 +899,59 @@ class ProjudiAPI:
                 (By.XPATH, "//table")
             ]
             
-            for seletor in seletores_tabela:
+            # Aguardamento inteligente com retry
+            max_retries = 3
+            for tentativa in range(max_retries):
                 try:
-                    session['wait'].until(EC.presence_of_element_located(seletor))
-                    logger.info(f"✅ Tabela de movimentações encontrada com seletor: {seletor}")
-                    tabela_encontrada = True
-                    break
-                except:
-                    continue
+                    for seletor in seletores_tabela:
+                        try:
+                            # Aguardar elemento com timeout reduzido
+                            WebDriverWait(session['driver'], 10).until(EC.presence_of_element_located(seletor))
+                            logger.info(f"✅ Tabela de movimentações encontrada com seletor: {seletor}")
+                            tabela_encontrada = True
+                            break
+                        except:
+                            continue
+                    
+                    if tabela_encontrada:
+                        break
+                    else:
+                        # Se não encontrou, aguardar um pouco e tentar novamente
+                        if tentativa < max_retries - 1:
+                            logger.info(f"🔄 Tentativa {tentativa + 1}/{max_retries} - Aguardando carregamento...")
+                            time.sleep(2)
+                        else:
+                            logger.warning("⚠️ Tabela de movimentações não encontrada após todas as tentativas")
+                            return []
+                            
+                except Exception as e:
+                    if tentativa < max_retries - 1:
+                        logger.warning(f"⚠️ Erro na tentativa {tentativa + 1}: {e}")
+                        time.sleep(2)
+                    else:
+                        logger.error(f"❌ Erro ao aguardar tabela: {e}")
+                        return []
             
-            if not tabela_encontrada:
-                logger.warning("⚠️ Tabela de movimentações não encontrada")
-                return []
+            # Aguardar um pouco mais para garantir que a tabela está completamente carregada
+            time.sleep(1)
             
             # Extrair dados da tabela
             soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
             
-            # Tentar encontrar a tabela de movimentações
-            tabela = soup.find('table', {'id': 'TabelaArquivos'})
-            if not tabela:
-                tabela = soup.find('table', {'id': 'Tabela'})
-            if not tabela:
-                # Tentar encontrar qualquer tabela que contenha movimentações
-                tabelas = soup.find_all('table')
-                for t in tabelas:
-                    if t.find('td', string=re.compile(r'movimentação|movimentacao', re.I)):
-                        tabela = t
-                        break
-                if not tabela and tabelas:
-                    tabela = tabelas[0]  # Usar a primeira tabela como fallback
+            # Tentar encontrar a tabela de movimentações com seletores otimizados
+            tabela = None
+            seletores_bs4 = [
+                ('table', {'id': 'TabelaArquivos'}),
+                ('table', {'id': 'Tabela'}),
+                ('table', {'class': 'Tabela'}),
+                ('table', {})
+            ]
+            
+            for tag, attrs in seletores_bs4:
+                tabela = soup.find(tag, attrs)
+                if tabela:
+                    logger.info(f"✅ Tabela encontrada via BeautifulSoup: {tag} {attrs}")
+                    break
             
             if not tabela:
                 logger.warning("❌ Tabela de movimentações não encontrada!")
@@ -931,363 +1047,142 @@ class ProjudiAPI:
             return []
 
     def extrair_partes_envolvidas(self, session, processo_info):
-        """Extrai as partes envolvidas de um processo"""
+        """Extrai as partes envolvidas de um processo - VERSÃO CORRIGIDA"""
         try:
             logger.info("👥 Extraindo partes envolvidas...")
             
             # Aguardar carregamento da página principal
-            time.sleep(2)
+            time.sleep(1)
             
-            # Procurar pelo link das partes envolvidas de forma mais abrangente
-            partes_links = []
+            # Primeiro, tentar extrair partes diretamente da página atual
+            partes_envolvidas = []
             
-            # 1. Buscar por textos relacionados a partes (baseado na interface real do PROJUDI)
-            textos_partes = [
-                "Visualizar Partes no Processo",
-                "Visualizar todas as partes", 
-                "Visualizar partes",
-                "Ver partes",
-                "Partes no Processo",
-                "partes envolvidas", 
-                "dados das partes",
-                "informações das partes",
-                "e outras",
-                "outras",
-                "partes",
-                "participantes"
+            # Buscar por informações de partes na página atual
+            try:
+                # Buscar por elementos que contenham informações de partes
+                elementos_partes = session['driver'].find_elements(By.XPATH, "//*[contains(text(), 'Polo') or contains(text(), 'Autor') or contains(text(), 'Réu') or contains(text(), 'Requerente') or contains(text(), 'Requerido')]")
+                
+                for elemento in elementos_partes:
+                    try:
+                        texto = elemento.text.strip()
+                        if texto and len(texto) > 10:  # Filtrar textos muito curtos
+                            # Verificar se contém informações relevantes
+                            if any(palavra in texto.lower() for palavra in ['polo', 'autor', 'réu', 'requerente', 'requerido', 'advogado', 'cpf', 'cnpj']):
+                                logger.info(f"✅ Encontrado: {texto[:100]}...")
+                                partes_envolvidas.append({
+                                    'nome': texto,
+                                    'tipo': 'Parte Envolvida',
+                                    'processo': processo_info.get('numero', '')
+                                })
+                    except Exception as e:
+                        logger.debug(f"⚠️ Erro ao processar elemento: {e}")
+                    continue
+            
+                # Se encontrou partes, retornar
+                if partes_envolvidas:
+                    logger.info(f"✅ Extraídas {len(partes_envolvidas)} partes da página atual")
+                    return partes_envolvidas
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ Erro ao extrair partes da página atual: {e}")
+            
+            # Se não encontrou partes na página atual, tentar buscar por links específicos
+            logger.info("🔍 Procurando por links de partes...")
+            
+            # Buscar por links que possam levar às partes
+            seletores_links = [
+                (By.XPATH, "//a[contains(text(), 'Partes')]"),
+                (By.XPATH, "//a[contains(text(), 'Envolvidas')]"),
+                (By.XPATH, "//a[contains(text(), 'Visualizar')]"),
+                (By.XPATH, "//a[contains(@href, 'parte')]"),
+                (By.XPATH, "//a[contains(@onclick, 'parte')]"),
+                (By.XPATH, "//button[contains(text(), 'Partes')]"),
+                (By.XPATH, "//button[contains(text(), 'Visualizar')]"),
             ]
             
-            logger.info("🔍 Procurando links por texto...")
-            for texto in textos_partes:
+            link_encontrado = None
+            for seletor_tipo, seletor_valor in seletores_links:
                 try:
-                    # Buscar por texto exato e parcial
-                    links_exato = session['driver'].find_elements(By.LINK_TEXT, texto)
-                    links_parcial = session['driver'].find_elements(By.PARTIAL_LINK_TEXT, texto)
-                    
-                    if links_exato:
-                        partes_links.extend(links_exato)
-                        logger.info(f"✅ Encontrado link exato: '{texto}'")
+                    elementos = session['driver'].find_elements(seletor_tipo, seletor_valor)
+                    if elementos:
+                        link_encontrado = elementos[0]
+                        logger.info(f"✅ Link encontrado: {seletor_tipo}={seletor_valor}")
                         break
-                    elif links_parcial:
-                        partes_links.extend(links_parcial)
-                        logger.info(f"✅ Encontrado link parcial: '{texto}'")
-                        break
-                except:
+                except Exception as e:
                     continue
             
-            # 2. Buscar por padrões mais específicos do PROJUDI
-            if not partes_links:
-                logger.info("🔍 Procurando por padrões PROJUDI...")
+            if link_encontrado:
                 try:
-                    # Buscar links com href contendo palavras-chave específicas do PROJUDI
-                    xpath_queries = [
-                        "//a[contains(text(), 'Visualizar Partes') or contains(text(), 'Visualizar partes')]",
-                        "//a[contains(text(), 'Visualizar todas as partes')]", 
-                        "//a[contains(text(), 'Ver partes') or contains(text(), 'Ver Partes')]",
-                        "//a[contains(text(), 'Partes no Processo')]",
-                        "//a[contains(@href, 'parte') or contains(@href, 'Parte')]",
-                        "//a[contains(@href, 'participante') or contains(@href, 'Participante')]",
-                        "//a[contains(@href, 'dados') and contains(@href, 'parte')]",
-                        "//a[contains(text(), 'outras') or contains(text(), 'Outras')]",
-                        "//a[contains(text(), 'parte') or contains(text(), 'Parte')]",
-                        "//a[contains(@onclick, 'parte') or contains(@onclick, 'Parte')]",
-                        "//a[contains(@onclick, 'participante')]"
-                    ]
+                    # Clicar no link
+                    session['driver'].execute_script("arguments[0].scrollIntoView(true);", link_encontrado)
+                    time.sleep(0.5)
+                    link_encontrado.click()
+                    logger.info("✅ Clicado no link das partes")
                     
-                    for xpath in xpath_queries:
-                        try:
-                            elementos = session['driver'].find_elements(By.XPATH, xpath)
-                            if elementos:
-                                partes_links.extend(elementos)
-                                logger.info(f"✅ Encontrado via xpath: {xpath}")
-                                break
-                        except:
-                            continue
-                except:
-                    pass
-            
-            # 3. Buscar em abas ou menus suspensos 
-            if not partes_links:
-                logger.info("🔍 Procurando em abas e menus...")
-                try:
-                    # Buscar por elementos tipo tab, button ou menu
-                    elementos_interativos = [
-                        "//button[contains(text(), 'parte') or contains(text(), 'outras')]",
-                        "//div[@class='tab' or @class='menu']//a[contains(text(), 'parte') or contains(text(), 'outras')]",
-                        "//li//a[contains(text(), 'parte') or contains(text(), 'outras')]",
-                        "//span[contains(text(), 'parte') or contains(text(), 'outras')]//ancestor::a",
-                        "//td//a[contains(text(), 'outras') or contains(text(), 'parte')]"
-                    ]
-                    
-                    for xpath in elementos_interativos:
-                        try:
-                            elementos = session['driver'].find_elements(By.XPATH, xpath)
-                            if elementos:
-                                partes_links.extend(elementos)
-                                logger.info(f"✅ Encontrado em interface: {xpath}")
-                                break
-                        except:
-                            continue
-                except:
-                    pass
-            
-            # 4. Como último recurso, buscar qualquer link que possa ser relevante
-            if not partes_links:
-                logger.info("🔍 Busca ampla por links relevantes...")
-                try:
-                    soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
-                    
-                    # Buscar todos os links e analisar seu conteúdo
-                    todos_links = soup.find_all('a', href=True)
-                    for link in todos_links:
-                        texto_link = link.get_text(strip=True).lower()
-                        href_link = link.get('href', '').lower()
-                        
-                        # Verificar se o link pode ser das partes
-                        palavras_chave = ['parte', 'outras', 'participante', 'dados', 'informações']
-                        
-                        if any(palavra in texto_link or palavra in href_link for palavra in palavras_chave):
-                            try:
-                                # Tentar encontrar o elemento na página
-                                href_original = link.get('href')
-                                if href_original:
-                                    elemento = session['driver'].find_element(By.XPATH, f"//a[@href='{href_original}']")
-                                    partes_links.append(elemento)
-                                    logger.info(f"✅ Encontrado link candidato: '{texto_link}' - {href_original}")
-                                    break
-                            except:
-                                continue
-                except Exception as e:
-                    logger.warning(f"⚠️ Erro na busca ampla: {e}")
-            
-            if not partes_links:
-                logger.warning("⚠️ Link para partes envolvidas não encontrado")
-                
-                # Log de debug: salvar HTML da página para análise
-                try:
-                    with open('debug_processo_sem_partes.html', 'w', encoding='utf-8') as f:
-                        f.write(session['driver'].page_source)
-                    logger.info("💾 HTML da página salvo em debug_processo_sem_partes.html para análise")
-                except:
-                    pass
-                
-                # Tentar extrair partes das próprias movimentações se disponíveis
-                logger.info("🔍 Tentando extrair partes das movimentações existentes...")
-                partes_das_movimentacoes = self._extrair_partes_das_movimentacoes(session)
-                if partes_das_movimentacoes:
-                    logger.info(f"✅ {len(partes_das_movimentacoes)} partes extraídas das movimentações")
-                    return partes_das_movimentacoes
-                
-                return []
-            
-            # Clicar no primeiro link encontrado
-            link_partes = partes_links[0]
-            try:
-                session['driver'].execute_script("arguments[0].click();", link_partes)
-                logger.info("🔗 Clicou no link das partes envolvidas")
-                time.sleep(3)
-            except:
-                try:
-                    link_partes.click()
-                    logger.info("🔗 Clicou no link das partes envolvidas (método alternativo)")
-                    time.sleep(3)
-                except Exception as e:
-                    logger.error(f"❌ Erro ao clicar no link das partes: {e}")
-                    return []
-            
-            # Aguardar carregamento da página das partes
-            time.sleep(2)
-            
-            # Extrair informações das partes
-            soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
-            partes = []
-            
-            # Primeiro, tentar extrair usando a estrutura específica do PROJUDI (POLO ATIVO/PASSIVO)
-            logger.info("🔍 Procurando por estrutura POLO ATIVO/PASSIVO...")
-            
-            polos_encontrados = False
-            
-            # Buscar por elementos que contenham "POLO ATIVO" ou "POLO PASSIVO"
-            elementos_polo = soup.find_all(text=re.compile(r'POLO\s+(ATIVO|PASSIVO)', re.I))
-            
-            for elemento_texto in elementos_polo:
-                try:
-                    # Encontrar o elemento pai que contém o polo
-                    elemento_pai = elemento_texto.parent
-                    while elemento_pai and elemento_pai.name:
-                        texto_completo = elemento_pai.get_text()
-                        
-                        # Verificar se é POLO ATIVO ou PASSIVO
-                        if 'POLO ATIVO' in texto_completo.upper():
-                            tipo_polo = 'Polo Ativo'
-                        elif 'POLO PASSIVO' in texto_completo.upper():
-                            tipo_polo = 'Polo Passivo'
-                        else:
-                            elemento_pai = elemento_pai.parent
-                            continue
-                        
-                        # Extrair nome do polo
-                        nome_match = re.search(r'Nome\s+([^\n\r]+)', texto_completo, re.I)
-                        nome = nome_match.group(1).strip() if nome_match else ''
-                        
-                        # Se não encontrou nome com "Nome", tentar extrair o texto após o tipo do polo
-                        if not nome:
-                            texto_limpo = re.sub(r'POLO\s+(ATIVO|PASSIVO)', '', texto_completo, flags=re.I).strip()
-                            linhas = [linha.strip() for linha in texto_limpo.split('\n') if linha.strip()]
-                            if linhas:
-                                # Pegar a primeira linha não vazia que não seja "Nome"
-                                for linha in linhas:
-                                    if linha.lower() != 'nome' and len(linha) > 3:
-                                        nome = linha
-                                        break
-                        
-                        if nome:
-                            parte_info = {
-                                'nome': nome,
-                                'tipo': tipo_polo,
-                                'cpf_cnpj': '',
-                                'rg': '',
-                                'endereco': '',
-                                'telefone': '',
-                                'email': '',
-                                'advogado': '',
-                                'oab': '',
-                                'html_completo': str(elemento_pai),
-                                'texto_completo': texto_completo
-                            }
-                            
-                            # Tentar extrair mais informações do texto
-                            self._extrair_detalhes_parte(parte_info, texto_completo)
-                            
-                            partes.append(parte_info)
-                            polos_encontrados = True
-                            logger.info(f"✅ Encontrado {tipo_polo}: {nome}")
-                        
-                        break
-                        
-                except Exception as e:
-                    logger.warning(f"⚠️ Erro ao processar polo: {e}")
-                    continue
-            
-            # Se não encontrou polos, usar estratégia anterior (busca geral)
-            if not polos_encontrados:
-                logger.info("🔍 Estrutura POLO não encontrada, usando busca geral...")
-                
-                # Procurar por diferentes padrões de estrutura da página de partes
-                estruturas_candidatas = [
-                    soup.find_all('table'),
-                    soup.find_all('div', class_=re.compile(r'parte|participante|polo', re.I)),
-                    soup.find_all('div', {'id': re.compile(r'parte|participante|polo', re.I)}),
-                    soup.find_all('tr'),
-                    soup.find_all('div')
-                ]
-            
-            for estruturas in estruturas_candidatas:
-                if not estruturas:
-                    continue
-                    
-                for elemento in estruturas:
-                    texto_elemento = elemento.get_text(strip=True).lower()
-                    
-                    # Verificar se o elemento contém informações de uma parte
-                    if any(palavra in texto_elemento for palavra in [
-                        'advogado', 'nome:', 'cpf:', 'rg:', 'endereço:', 'telefone:',
-                        'autor', 'réu', 'requerente', 'requerido', 'impetrante',
-                        'impetrado', 'apelante', 'apelado'
-                    ]):
-                        # Extrair informações estruturadas
-                        parte_info = {
-                            'nome': '',
-                            'tipo': '',
-                            'cpf_cnpj': '',
-                            'rg': '',
-                            'endereco': '',
-                            'telefone': '',
-                            'email': '',
-                            'advogado': '',
-                            'oab': '',
-                            'html_completo': str(elemento),
-                            'texto_completo': elemento.get_text(strip=True)
-                        }
-                        
-                        # Tentar extrair informações específicas usando regex
-                        texto_completo = elemento.get_text()
-                        
-                        # Usar função auxiliar para extrair detalhes
-                        self._extrair_detalhes_parte(parte_info, texto_completo)
-                        
-                        # Tipo da parte (autor, réu, etc.) - só se não foi definido ainda
-                        if not parte_info['tipo']:
-                            for tipo in ['autor', 'réu', 'requerente', 'requerido', 'impetrante', 'impetrado', 'apelante', 'apelado']:
-                                if tipo in texto_elemento:
-                                    parte_info['tipo'] = tipo.title()
-                                    break
-                        
-                        # Só adicionar se encontrou pelo menos nome ou alguma informação relevante
-                        if (parte_info['nome'] or parte_info['cpf_cnpj'] or 
-                            parte_info['advogado'] or len(parte_info['texto_completo']) > 50):
-                            
-                            # Evitar duplicatas
-                            duplicata = False
-                            for parte_existente in partes:
-                                if (parte_existente['texto_completo'] == parte_info['texto_completo'] or
-                                    (parte_info['nome'] and parte_existente['nome'] == parte_info['nome'])):
-                                    duplicata = True
-                                    break
-                            
-                            if not duplicata:
-                                partes.append(parte_info)
-                
-                # Se encontrou partes, parar de procurar
-                if partes:
-                    break
-            
-            # Tentar voltar à página principal do processo
-            try:
-                logger.info("🔙 Tentando voltar à página principal do processo...")
-                
-                # Tentar diferentes métodos para voltar
-                voltar_sucesso = False
-                
-                # 1. Usar botão "Voltar" do navegador
-                try:
-                    session['driver'].back()
+                    # Aguardar carregamento
                     time.sleep(2)
-                    voltar_sucesso = True
-                    logger.info("✅ Voltou usando botão voltar do navegador")
-                except:
-                    pass
-                
-                # 2. Se não conseguiu, tentar encontrar botão "Voltar" na página
-                if not voltar_sucesso:
+                    
+                    # Extrair informações das partes
+                    elementos_partes = session['driver'].find_elements(By.XPATH, "//div[contains(@class, 'parte') or contains(@class, 'polo') or contains(@class, 'envolvido')]")
+                    
+                    for elemento in elementos_partes:
+                        try:
+                            texto = elemento.text.strip()
+                            if texto and len(texto) > 10:
+                                logger.info(f"✅ Encontrado: {texto[:100]}...")
+                                partes_envolvidas.append({
+                                    'nome': texto,
+                                    'tipo': 'Parte Envolvida',
+                                    'processo': processo_info.get('numero', '')
+                                })
+                        except Exception as e:
+                            logger.debug(f"⚠️ Erro ao processar elemento parte: {e}")
+                        continue
+                    
+                    # Voltar à página principal
+                    session['driver'].back()
+                    time.sleep(1)
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao clicar no link das partes: {e}")
+                    # Tentar voltar mesmo em caso de erro
                     try:
-                        botoes_voltar = session['driver'].find_elements(By.XPATH, 
-                            "//a[contains(text(), 'Voltar') or contains(text(), 'voltar') or contains(@onclick, 'history.back')]")
-                        if botoes_voltar:
-                            botoes_voltar[0].click()
-                            time.sleep(2)
-                            voltar_sucesso = True
-                            logger.info("✅ Voltou usando botão voltar da página")
+                        session['driver'].back()
+                        time.sleep(1)
                     except:
                         pass
                 
-                if not voltar_sucesso:
-                    logger.warning("⚠️ Não conseguiu voltar automaticamente à página principal")
+            # Se ainda não encontrou partes, tentar extrair das movimentações
+            if not partes_envolvidas:
+                logger.info("🔍 Tentando extrair partes das movimentações...")
+                try:
+                    # Buscar por informações de partes nas movimentações
+                    elementos_mov = session['driver'].find_elements(By.XPATH, "//*[contains(text(), 'Intimação') or contains(text(), 'Citação') or contains(text(), 'Advogado')]")
                     
-            except Exception as e:
-                logger.warning(f"⚠️ Erro ao tentar voltar: {e}")
+                    for elemento in elementos_mov:
+                        try:
+                            texto = elemento.text.strip()
+                            if texto and len(texto) > 20:
+                                # Verificar se contém informações de partes
+                                if any(palavra in texto.lower() for palavra in ['advogado', 'intimação', 'citação', 'parte']):
+                                    logger.info(f"✅ Encontrado nas movimentações: {texto[:100]}...")
+                                    partes_envolvidas.append({
+                                        'nome': texto,
+                                        'tipo': 'Parte das Movimentações',
+                                        'processo': processo_info.get('numero', '')
+                                    })
+                        except Exception as e:
+                            logger.debug(f"⚠️ Erro ao processar elemento movimentação: {e}")
+                            continue
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao extrair partes das movimentações: {e}")
             
-            logger.info(f"✅ {len(partes)} partes envolvidas extraídas")
-            return partes
+            logger.info(f"✅ Extraídas {len(partes_envolvidas)} partes envolvidas")
+            return partes_envolvidas
             
         except Exception as e:
             logger.error(f"❌ Erro ao extrair partes envolvidas: {e}")
-            # Tentar voltar mesmo em caso de erro
-            try:
-                session['driver'].back()
-                time.sleep(1)
-            except:
-                pass
             return []
     
     def _extrair_detalhes_parte(self, parte_info, texto_completo):
@@ -1329,7 +1224,7 @@ class ProjudiAPI:
             if advogado_match:
                 parte_info['advogado'] = advogado_match.group(1).strip()
             
-                        # OAB
+            # OAB
             oab_match = re.search(r'OAB[\s:]*([^\n\r,]+)', texto_completo, re.I)
             if oab_match:
                 parte_info['oab'] = oab_match.group(1).strip()
@@ -1701,11 +1596,17 @@ class ProjudiAPI:
                     movimentacoes = self._robust_operation(session, self.extrair_movimentacoes, "Extrair Movimentações", processo_ficticio, limite_movimentacoes, extrair_anexos)
                     if not movimentacoes:
                         movimentacoes = []
+                        logger.warning(f"⚠️ Nenhuma movimentação encontrada para processo {valor}")
                     
-                    # Extrair partes envolvidas diretamente
-                    partes_envolvidas = self._robust_operation(session, self.extrair_partes_envolvidas, "Extrair Partes Envolvidas", processo_ficticio)
-                    if not partes_envolvidas:
-                        partes_envolvidas = []
+                    # SÓ extrair partes se encontrou movimentações
+                    partes_envolvidas = []
+                    if movimentacoes:
+                        logger.info(f"📋 Movimentações encontradas, extraindo partes envolvidas...")
+                        partes_envolvidas = self._robust_operation(session, self.extrair_partes_envolvidas, "Extrair Partes Envolvidas", processo_ficticio)
+                        if not partes_envolvidas:
+                            partes_envolvidas = []
+                    else:
+                        logger.info(f"⚠️ Pulando extração de partes - nenhuma movimentação encontrada")
                     
                     # Criar resultado único
                     resultado_processo = {
@@ -1771,11 +1672,17 @@ class ProjudiAPI:
                         movimentacoes = self._robust_operation(session, self.extrair_movimentacoes, "Extrair Movimentações", processo, limite_movimentacoes, extrair_anexos)
                         if not movimentacoes:
                             movimentacoes = []
+                            logger.warning(f"⚠️ Nenhuma movimentação encontrada para processo {i+1}")
                         
-                        # Extrair partes envolvidas com sistema robusto
-                        partes_envolvidas = self._robust_operation(session, self.extrair_partes_envolvidas, "Extrair Partes Envolvidas", processo)
-                        if not partes_envolvidas:
-                            partes_envolvidas = []
+                        # SÓ extrair partes se encontrou movimentações
+                        partes_envolvidas = []
+                        if movimentacoes:
+                            logger.info(f"📋 Movimentações encontradas para processo {i+1}, extraindo partes...")
+                            partes_envolvidas = self._robust_operation(session, self.extrair_partes_envolvidas, "Extrair Partes Envolvidas", processo)
+                            if not partes_envolvidas:
+                                partes_envolvidas = []
+                        else:
+                            logger.info(f"⚠️ Pulando extração de partes para processo {i+1} - nenhuma movimentação encontrada")
                         
                         # Adicionar ao resultado
                         resultado_processo = {

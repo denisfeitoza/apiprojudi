@@ -27,11 +27,27 @@ logger = logging.getLogger(__name__)
 class SessionPool:
     """Pool de sessões com fingerprint único"""
     
-    def __init__(self, max_sessions=6):
+    def __init__(self, max_sessions=None):
+        # Configurar número de sessões via variável de ambiente
+        if max_sessions is None:
+            # Tentar ler da variável de ambiente
+            env_sessions = os.getenv('PROJUDI_MAX_SESSIONS')
+            if env_sessions:
+                try:
+                    max_sessions = int(env_sessions)
+                    logger.info(f"📊 Configuração de sessões via variável de ambiente: {max_sessions}")
+                except ValueError:
+                    logger.warning(f"⚠️ Valor inválido para PROJUDI_MAX_SESSIONS: {env_sessions}. Usando padrão.")
+                    max_sessions = 10
+            else:
+                max_sessions = 10  # Padrão se não configurado
+        
         self.max_sessions = max_sessions
         self.sessions = []
         self.lock = threading.Lock()
         self.session_counter = 0
+        
+        logger.info(f"🏊 Pool de sessões inicializado com {self.max_sessions} sessões máximas")
     
     def _generate_fingerprint(self):
         """Gera fingerprint único para cada sessão"""

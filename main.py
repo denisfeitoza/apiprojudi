@@ -57,14 +57,15 @@ if REDIS_AVAILABLE:
 else:
     logger.warning("⚠️ Redis não disponível - usando processamento direto")
 
-# Thread para processar fila
-queue_processor_thread = None
+# Threads para processar fila (multithreading)
+queue_processor_threads = []
 queue_processing = False
+MAX_WORKER_THREADS = 6  # 6 threads simultâneas
 
-def process_queue():
-    """Processa itens da fila em background"""
+def process_queue_worker(worker_id):
+    """Processa itens da fila em background - Worker individual"""
     global queue_processing
-    queue_processing = True
+    logger.info(f"🚀 Worker {worker_id} iniciado")
     
     while queue_processing and queue_manager:
         try:
@@ -77,7 +78,7 @@ def process_queue():
             request_id = item["id"]
             request_data = item["data"]
             
-            logger.info(f"🔄 Processando requisição {request_id} da fila")
+            logger.info(f"🔄 Worker {worker_id} processando requisição {request_id}")
             
             # Processa a busca
             try:
@@ -90,25 +91,33 @@ def process_queue():
                 
                 # Marca como concluída
                 queue_manager.mark_completed(request_id, result)
-                logger.info(f"✅ Requisição {request_id} concluída com sucesso")
+                logger.info(f"✅ Worker {worker_id} - Requisição {request_id} concluída")
                 
             except Exception as e:
-                logger.error(f"❌ Erro ao processar requisição {request_id}: {e}")
+                logger.error(f"❌ Worker {worker_id} - Erro ao processar requisição {request_id}: {e}")
                 queue_manager.mark_failed(request_id, str(e))
                 
         except Exception as e:
-            logger.error(f"❌ Erro no processamento da fila: {e}")
+            logger.error(f"❌ Worker {worker_id} - Erro no processamento: {e}")
             time.sleep(5)  # Aguarda 5 segundos em caso de erro
     
-    logger.info("🛑 Processamento da fila finalizado")
+    logger.info(f"🛑 Worker {worker_id} finalizado")
 
 def start_queue_processor():
-    """Inicia o processador da fila"""
-    global queue_processor_thread
+    """Inicia múltiplos processadores da fila para multithreading"""
+    global queue_processor_threads, queue_processing
     if queue_manager and not queue_processing:
-        queue_processor_thread = threading.Thread(target=process_queue, daemon=True)
-        queue_processor_thread.start()
-        logger.info("🚀 Processador da fila iniciado")
+        queue_processing = True
+        queue_processor_threads = []
+        
+        # Inicia 6 threads de processamento
+        for i in range(MAX_WORKER_THREADS):
+            thread = threading.Thread(target=process_queue_worker, args=(i+1,), daemon=True)
+            thread.start()
+            queue_processor_threads.append(thread)
+            time.sleep(0.5)  # Pequeno delay entre threads
+        
+        logger.info(f"🚀 {MAX_WORKER_THREADS} workers da fila iniciados para multithreading")
 
 @app.after_request
 def after_request(response):
@@ -146,24 +155,31 @@ def root():
         "timestamp": datetime.now().isoformat()
     })
 
-@app.route('/health', methods=['GET'])
+@app.route('/health')
 def health():
-    """Endpoint de health check"""
+    """Endpoint de saúde da API"""
     try:
-        # Verificar se a API está funcionando
-        pool_status = api.session_pool.get_status()
-        return jsonify({
-            "status": "healthy",
-            "pool_sessions": pool_status['active_sessions'],
-            "pool_max_sessions": pool_status['max_sessions'],
-            "timestamp": datetime.now().isoformat()
-        })
+        # Obter informações do pool de sessões
+        pool_info = {
+            'pool_max_sessions': api.session_pool.max_sessions,
+            'pool_sessions': len(api.session_pool.sessions),
+            'status': 'healthy',
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        # Adicionar informações de configuração
+        env_sessions = os.getenv('PROJUDI_MAX_SESSIONS', 'Não configurado')
+        pool_info['config'] = {
+            'PROJUDI_MAX_SESSIONS': env_sessions,
+            'REDIS_URL': os.getenv('REDIS_URL', 'Não configurado')
+        }
+        
+        return jsonify(pool_info)
     except Exception as e:
-        logger.error(f"❌ Health check falhou: {e}")
         return jsonify({
-            "status": "unhealthy",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
         }), 500
 
 @app.route('/status', methods=['GET'])
@@ -188,7 +204,7 @@ def status():
 
 @app.route('/status/<request_id>', methods=['GET'])
 def get_request_status(request_id):
-    """Obtém status de uma requisição na fila"""
+    """Endpoint para verificar status de uma requisição específica - VERSÃO OTIMIZADA"""
     try:
         if not queue_manager:
             return jsonify({
@@ -196,25 +212,40 @@ def get_request_status(request_id):
                 "status": "error"
             }), 503
         
+        # Verificar status na fila
         status = queue_manager.get_status(request_id)
+        
         if not status:
             return jsonify({
                 "error": "Requisição não encontrada",
-                "status": "error"
+                "status": "not_found"
             }), 404
         
-        # Adiciona posição na fila
-        if status.get("status") == "pending":
-            status["queue_position"] = queue_manager.get_queue_position(request_id)
+        # Adicionar informações de performance
+        response_data = {
+            "request_id": request_id,
+            "status": status.get("status", "unknown"),
+            "timestamp": datetime.now().isoformat()
+        }
         
-        return jsonify(status)
+        # Adicionar dados apenas se concluído
+        if status.get("status") == "completed":
+            response_data.update({
+                "result": status.get("result", {}),
+                "processing_time": status.get("processing_time", 0)
+            })
+        elif status.get("status") == "failed":
+            response_data.update({
+                "error": status.get("error", "Erro desconhecido")
+            })
+        
+        return jsonify(response_data)
         
     except Exception as e:
-        logger.error(f"❌ Erro ao obter status: {e}")
+        logger.error(f"❌ Erro ao verificar status {request_id}: {e}")
         return jsonify({
-            "status": "error",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
+            "error": f"Erro interno: {str(e)}",
+            "status": "error"
         }), 500
 
 @app.route('/queue/stats', methods=['GET'])
@@ -383,17 +414,60 @@ def buscar_multiplo():
 
 @app.route('/cleanup', methods=['POST'])
 def cleanup():
-    """Endpoint para limpar pool de sessões"""
+    """Endpoint para limpar pool de sessões e parar workers"""
     try:
+        global queue_processing
+        queue_processing = False  # Para todos os workers
+        
+        # Aguarda threads terminarem
+        for thread in queue_processor_threads:
+            if thread.is_alive():
+                thread.join(timeout=5)
+        
         api.session_pool.cleanup()
+        
+        # Limpa requisições órfãs se o Redis estiver disponível
+        orphaned_cleared = 0
+        if queue_manager:
+            orphaned_cleared = queue_manager.clear_orphaned_requests()
+        
         return jsonify({
             "status": "success",
-            "message": "Pool de sessões limpo com sucesso",
+            "message": "Pool de sessões limpo e workers parados com sucesso",
+            "workers_stopped": len(queue_processor_threads),
+            "orphaned_requests_cleared": orphaned_cleared,
             "timestamp": datetime.now().isoformat()
         })
     except Exception as e:
         logger.error(f"❌ Erro ao limpar pool: {e}")
         return jsonify({"error": f"Erro ao limpar pool: {str(e)}", "status": "error"}), 200
+
+@app.route('/queue/cleanup', methods=['POST'])
+def cleanup_queue():
+    """Endpoint para limpar requisições órfãs da fila"""
+    try:
+        if not queue_manager:
+            return jsonify({
+                "error": "Sistema de fila não disponível",
+                "status": "error"
+            }), 503
+        
+        orphaned_cleared = queue_manager.clear_orphaned_requests()
+        
+        return jsonify({
+            "status": "success",
+            "orphaned_requests_cleared": orphaned_cleared,
+            "message": f"Limpeza concluída: {orphaned_cleared} requisições órfãs removidas",
+            "timestamp": datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Erro na limpeza da fila: {e}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 200
 
 if __name__ == '__main__':
     # Configurações para produção
@@ -403,6 +477,13 @@ if __name__ == '__main__':
     
     logger.info(f"🚀 Iniciando API PROJUDI V3 Ultra-Robusta na porta {port}")
     logger.info(f"🔧 Configurações: Host={host}, Debug={debug}")
+    
+    # Iniciar workers da fila automaticamente
+    if queue_manager:
+        start_queue_processor()
+        logger.info("✅ Workers da fila iniciados automaticamente")
+    else:
+        logger.warning("⚠️ Workers não iniciados - Redis não disponível")
     
     app.run(
         host=host, 

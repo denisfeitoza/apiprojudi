@@ -108,6 +108,11 @@ class QueueManager:
                 
         except Exception as e:
             logger.error(f"❌ Erro ao marcar como concluída: {e}")
+            # Garante que seja removida da lista de processamento mesmo com erro
+            try:
+                self.redis.hdel(self.processing_name, request_id)
+            except:
+                pass
     
     def mark_failed(self, request_id: str, error: str, retry: bool = True):
         """Marca requisição como falhada"""
@@ -229,4 +234,41 @@ class QueueManager:
             
         except Exception as e:
             logger.error(f"❌ Erro na limpeza: {e}")
+            return 0
+    
+    def clear_orphaned_requests(self):
+        """Limpa requisições órfãs que estão em processamento há muito tempo"""
+        try:
+            with self.lock:
+                # Obtém todas as requisições em processamento
+                processing_keys = self.redis.hkeys(self.processing_name)
+                orphaned_count = 0
+                
+                for key in processing_keys:
+                    item_json = self.redis.hget(self.processing_name, key)
+                    if item_json:
+                        item = json.loads(item_json)
+                        started_at = item.get("started_at")
+                        
+                        if started_at:
+                            try:
+                                started_time = datetime.fromisoformat(started_at).timestamp()
+                                current_time = datetime.now().timestamp()
+                                
+                                # Se está em processamento há mais de 10 minutos, considera órfã
+                                if current_time - started_time > 600:  # 10 minutos
+                                    self.redis.hdel(self.processing_name, key)
+                                    orphaned_count += 1
+                                    logger.warning(f"🧹 Removida requisição órfã {key} (em processamento há {(current_time - started_time)/60:.1f} minutos)")
+                            except:
+                                # Se não consegue verificar o tempo, remove de qualquer forma
+                                self.redis.hdel(self.processing_name, key)
+                                orphaned_count += 1
+                                logger.warning(f"🧹 Removida requisição órfã {key} (dados corrompidos)")
+                
+                logger.info(f"🧹 Limpeza de órfãs: {orphaned_count} requisições removidas")
+                return orphaned_count
+                
+        except Exception as e:
+            logger.error(f"❌ Erro na limpeza de órfãs: {e}")
             return 0 

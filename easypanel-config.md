@@ -1,118 +1,216 @@
-# 🚀 Configuração EasyPanel - PROJUDI API
+# Configuração EasyPanel - PROJUDI V3 API
 
-## 📋 **Configuração Completa para EasyPanel**
+## 🚀 Deploy no EasyPanel
 
-### **1. Criar Projeto**
-- **Nome**: `projudi-api`
-- **Tipo**: `Docker Compose`
+### 1. Configuração do Projeto
 
-### **2. Configurar Fonte**
-- **GitHub**: `https://github.com/denisfeitoza/apiprojudi`
-- **Branch**: `main`
-- **Build**: `Dockerfile`
+**Nome do Projeto:** `projudi-api-v3`
 
-### **3. Variáveis de Ambiente (OBRIGATÓRIAS)**
+**Tipo:** `Docker Compose`
 
-**⚠️ ATENÇÃO:** Se for usar no EasyPanel, ao adicionar um domínio ao projeto da API,  
-**é OBRIGATÓRIO alterar a porta interna de 80 para 8081 na configuração de domínios!**  
-Caso contrário, a API não funcionará corretamente.
+### 2. Variáveis de Ambiente
 
-```env
-# =============================================================================
-# CREDENCIAIS PROJUDI (OBRIGATÓRIAS)
-# =============================================================================
-PROJUDI_USER=34930230144
-PROJUDI_PASS=Joaquim1*
+Configure as seguintes variáveis no EasyPanel:
 
-# =============================================================================
-# CONFIGURAÇÕES DA API (OBRIGATÓRIAS)
-# =============================================================================
+```bash
+# Configuração de Sessões Simultâneas
+PROJUDI_MAX_SESSIONS=10
+
+# Configuração Redis (opcional)
+REDIS_URL=redis://redis:6379
+
+# Credenciais PROJUDI (OBRIGATÓRIAS)
+PROJUDI_USER=seu_usuario
+PROJUDI_PASS=sua_senha
+
+# Configurações da API
 API_PORT=8081
 API_HOST=0.0.0.0
 API_DEBUG=false
 
-# =============================================================================
-# SERVENTIA PADRÃO (OBRIGATÓRIA)
-# =============================================================================
+# Serventia padrão
 DEFAULT_SERVENTIA="Advogados - OAB/Matrícula: 25348-N-GO"
 
-# =============================================================================
-# CONFIGURAÇÕES DO SELENIUM (OPCIONAIS)
-# =============================================================================
+# Configurações Selenium
 SELENIUM_HEADLESS=true
 SELENIUM_TIMEOUT=30
 SELENIUM_WAIT=5
 
-# =============================================================================
-# CONFIGURAÇÕES DE LOG (OPCIONAIS)
-# =============================================================================
+# Logs
 LOG_LEVEL=INFO
 ```
 
-### **4. Configuração de Porta**
+### 3. Configuração de Sessões por Tipo de VPS
 
-- **Porta Externa**: `80` (ou deixe vazio)
-- **Porta Interna**: `8081`
-
-### **5. Health Check**
-
-- **URL**: `http://localhost:8081/health`
-- **Intervalo**: `30s`
-- **Timeout**: `10s`
-- **Retries**: `3`
-- **Start Period**: `40s`
-
-### **6. Configuração de Domínio (CRÍTICA)**
-
-**APÓS O DEPLOY, EDITE O MAPEAMENTO:**
-
-1. Vá em **"Domínios"**
-2. Clique no **ícone de lápis** ao lado do mapeamento interno
-3. **Altere de**: `http://apis_projudi:80/`
-4. **Para**: `http://apis_projudi:8081/`
-5. Clique em **"Save"**
-6. Clique em **"Restart"**
-
-### **7. Deploy**
-
-1. Clique em **"Deploy"**
-2. Aguarde o build completar
-3. Verifique se o status fica **verde**
-
-## 🧪 **Teste da API**
-
-### **Health Check**
+#### VPS Básico (1-2 vCPUs, 2-4GB RAM)
 ```bash
-curl https://seu-dominio.com/health
+PROJUDI_MAX_SESSIONS=5
 ```
 
-### **Busca por CPF**
+#### VPS Médio (2-4 vCPUs, 4-8GB RAM)
 ```bash
-curl -X POST https://seu-dominio.com/buscar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tipo_busca": "cpf",
-    "valor": "12345678901",
-    "movimentacoes": "3"
-  }'
+PROJUDI_MAX_SESSIONS=10
 ```
 
-## 🚨 **Troubleshooting**
+#### VPS Avançado (4+ vCPUs, 8GB+ RAM)
+```bash
+PROJUDI_MAX_SESSIONS=20
+```
 
-### **Problema: "Service is not reachable"**
-**Causa**: Mapeamento de domínio incorreto
-**Solução**: Verifique se está `http://apis_projudi:8081/` e não `http://apis_projudi:80/`
+### 4. Docker Compose
 
-### **Problema: API não responde**
-**Causa**: Variáveis de ambiente incorretas
-**Solução**: Verifique se `API_PORT=8081` e `API_HOST=0.0.0.0`
+```yaml
+version: '3.8'
 
-### **Problema: Build falha**
-**Causa**: Dependências ou configuração Docker
-**Solução**: Verifique os logs do build no EasyPanel
+services:
+  projudi-api:
+    build: .
+    container_name: projudi-api-v3
+    ports:
+      - "8081:8081"
+    environment:
+      - PROJUDI_MAX_SESSIONS=${PROJUDI_MAX_SESSIONS:-10}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - PROJUDI_USER=${PROJUDI_USER}
+      - PROJUDI_PASS=${PROJUDI_PASS}
+      - API_PORT=${API_PORT:-8081}
+      - API_HOST=${API_HOST:-0.0.0.0}
+      - API_DEBUG=${API_DEBUG:-false}
+      - DEFAULT_SERVENTIA=${DEFAULT_SERVENTIA}
+      - SELENIUM_HEADLESS=${SELENIUM_HEADLESS:-true}
+      - SELENIUM_TIMEOUT=${SELENIUM_TIMEOUT:-30}
+      - SELENIUM_WAIT=${SELENIUM_WAIT:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+    restart: unless-stopped
 
-## 📞 **Suporte**
+  redis:
+    image: redis:alpine
+    container_name: projudi-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
-- **GitHub**: https://github.com/denisfeitoza/apiprojudi
-- **Issues**: https://github.com/denisfeitoza/apiprojudi/issues
-- **Documentação**: README.md 
+volumes:
+  redis_data:
+```
+
+### 5. Configuração de Domínio
+
+**Mapeamento de Domínio:**
+- **Domínio:** `api.seudominio.com`
+- **Porta:** `8081`
+- **Protocolo:** `HTTP`
+
+**Configuração N8N:**
+```json
+{
+  "parameters": {
+    "method": "POST",
+    "url": "http://projudi-api:8081/buscar",
+    "sendBody": true,
+    "bodyParameters": {
+      "parameters": [
+        {
+          "name": "tipo_busca",
+          "value": "processo"
+        },
+        {
+          "name": "valor",
+          "value": "5466798-41.2019.8.09.0051"
+        }
+      ]
+    },
+    "options": {
+      "timeout": 300000,
+      "responseFormat": "json"
+    }
+  }
+}
+```
+
+### 6. Monitoramento
+
+#### Health Check
+```bash
+curl https://api.seudominio.com/health
+```
+
+#### Stats da Fila
+```bash
+curl https://api.seudominio.com/queue/stats
+```
+
+### 7. Troubleshooting
+
+#### Verificar Logs
+```bash
+# No EasyPanel
+docker logs projudi-api-v3
+
+# Ou via SSH
+docker logs -f projudi-api-v3
+```
+
+#### Reiniciar Serviço
+```bash
+# No EasyPanel
+docker-compose restart
+
+# Ou via SSH
+docker-compose restart projudi-api
+```
+
+#### Limpeza de Emergência
+```bash
+curl -X POST https://api.seudominio.com/cleanup
+```
+
+### 8. Performance
+
+#### Otimizações Automáticas
+- **Cache de elementos**: Implementado
+- **Seletores otimizados**: Baseados em análise HTML
+- **Fallback inteligente**: Múltiplas estratégias
+- **Pool configurável**: Via variável de ambiente
+
+#### Tempos Esperados
+- **Login**: 3-4 segundos
+- **Busca por serventia**: 2-3 segundos
+- **Extração de dados**: 1-2 segundos
+- **Total por requisição**: 10-15 segundos
+
+### 9. Segurança
+
+#### Recomendações
+- Use HTTPS em produção
+- Configure firewall adequadamente
+- Monitore logs regularmente
+- Mantenha credenciais seguras
+
+#### Variáveis Sensíveis
+- `PROJUDI_USER`: Usuário do PROJUDI
+- `PROJUDI_PASS`: Senha do PROJUDI
+
+### 10. Backup
+
+#### Configuração
+```bash
+# Backup automático do Redis
+docker run --rm -v redis_data:/data -v $(pwd):/backup alpine tar czf /backup/redis-backup.tar.gz -C /data .
+```
+
+#### Restauração
+```bash
+# Restaurar Redis
+docker run --rm -v redis_data:/data -v $(pwd):/backup alpine tar xzf /backup/redis-backup.tar.gz -C /data
+```
+
+---
+
+**Nota:** Ajuste `PROJUDI_MAX_SESSIONS` conforme os recursos da sua VPS para otimizar performance. 

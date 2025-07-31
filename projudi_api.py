@@ -1062,6 +1062,22 @@ class ProjudiAPI:
             
             if not partes_links:
                 logger.warning("⚠️ Link para partes envolvidas não encontrado")
+                
+                # Log de debug: salvar HTML da página para análise
+                try:
+                    with open('debug_processo_sem_partes.html', 'w', encoding='utf-8') as f:
+                        f.write(session['driver'].page_source)
+                    logger.info("💾 HTML da página salvo em debug_processo_sem_partes.html para análise")
+                except:
+                    pass
+                
+                # Tentar extrair partes das próprias movimentações se disponíveis
+                logger.info("🔍 Tentando extrair partes das movimentações existentes...")
+                partes_das_movimentacoes = self._extrair_partes_das_movimentacoes(session)
+                if partes_das_movimentacoes:
+                    logger.info(f"✅ {len(partes_das_movimentacoes)} partes extraídas das movimentações")
+                    return partes_das_movimentacoes
+                
                 return []
             
             # Clicar no primeiro link encontrado
@@ -1313,13 +1329,111 @@ class ProjudiAPI:
             if advogado_match:
                 parte_info['advogado'] = advogado_match.group(1).strip()
             
-            # OAB
+                        # OAB
             oab_match = re.search(r'OAB[\s:]*([^\n\r,]+)', texto_completo, re.I)
             if oab_match:
                 parte_info['oab'] = oab_match.group(1).strip()
                 
         except Exception as e:
             logger.warning(f"⚠️ Erro ao extrair detalhes da parte: {e}")
+    
+    def _extrair_partes_das_movimentacoes(self, session):
+        """Tenta extrair informações das partes diretamente das movimentações"""
+        partes = []
+        try:
+            logger.info("🔍 Analisando movimentações para extrair partes...")
+            
+            soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
+            
+            # Buscar por padrões como "(Polo Ativo)" e "(Polo Passivo)" nas movimentações
+            texto_pagina = soup.get_text()
+            
+            # Extrair informações de polos das movimentações
+            padroes_polo = [
+                r'\(Polo\s+Ativo\)\s+([^\(\n\r]+)',
+                r'\(Polo\s+Passivo\)\s+([^\(\n\r]+)',
+                r'Polo\s+Ativo[:\s]+([^\n\r\(]+)',
+                r'Polo\s+Passivo[:\s]+([^\n\r\(]+)'
+            ]
+            
+            nomes_encontrados = set()  # Para evitar duplicatas
+            
+            for padrao in padroes_polo:
+                matches = re.finditer(padrao, texto_pagina, re.I)
+                for match in matches:
+                    nome = match.group(1).strip()
+                    
+                    # Limpar o nome (remover texto extra)
+                    nome = re.sub(r'\s*\(.*?\)\s*', '', nome).strip()
+                    nome = re.sub(r'\s*\-.*$', '', nome).strip()
+                    
+                    if nome and len(nome) > 3 and nome not in nomes_encontrados:
+                        nomes_encontrados.add(nome)
+                        
+                        # Determinar tipo
+                        if 'ativo' in match.group(0).lower():
+                            tipo = 'Polo Ativo'
+                        else:
+                            tipo = 'Polo Passivo'
+                        
+                        parte_info = {
+                            'nome': nome,
+                            'tipo': tipo,
+                            'cpf_cnpj': '',
+                            'rg': '',
+                            'endereco': '',
+                            'telefone': '',
+                            'email': '',
+                            'advogado': '',
+                            'oab': '',
+                            'html_completo': '',
+                            'texto_completo': match.group(0)
+                        }
+                        
+                        partes.append(parte_info)
+                        logger.info(f"✅ Extraído das movimentações - {tipo}: {nome}")
+            
+            # Buscar também por outros padrões comuns
+            outros_padroes = [
+                r'(?:Autor|AUTOR)[:\s]+([^\n\r\(]+)',
+                r'(?:Réu|RÉU)[:\s]+([^\n\r\(]+)',
+                r'(?:Requerente|REQUERENTE)[:\s]+([^\n\r\(]+)',
+                r'(?:Requerido|REQUERIDO)[:\s]+([^\n\r\(]+)'
+            ]
+            
+            for padrao in outros_padroes:
+                matches = re.finditer(padrao, texto_pagina, re.I)
+                for match in matches:
+                    nome = match.group(1).strip()
+                    nome = re.sub(r'\s*\(.*?\)\s*', '', nome).strip()
+                    
+                    if nome and len(nome) > 3 and nome not in nomes_encontrados:
+                        nomes_encontrados.add(nome)
+                        
+                        tipo_match = match.group(0).split(':')[0].split()[0]
+                        
+                        parte_info = {
+                            'nome': nome,
+                            'tipo': tipo_match.title(),
+                            'cpf_cnpj': '',
+                            'rg': '',
+                            'endereco': '',
+                            'telefone': '',
+                            'email': '',
+                            'advogado': '',
+                            'oab': '',
+                            'html_completo': '',
+                            'texto_completo': match.group(0)
+                        }
+                        
+                        partes.append(parte_info)
+                        logger.info(f"✅ Extraído das movimentações - {tipo_match}: {nome}")
+            
+            return partes
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao extrair partes das movimentações: {e}")
+            return []
     
     def _solicitar_acesso_processo(self, session):
         """Solicita acesso aos anexos do processo inteiro"""

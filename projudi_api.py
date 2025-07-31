@@ -935,63 +935,125 @@ class ProjudiAPI:
         try:
             logger.info("👥 Extraindo partes envolvidas...")
             
-            # Procurar pelo link das partes envolvidas
+            # Aguardar carregamento da página principal
+            time.sleep(2)
+            
+            # Procurar pelo link das partes envolvidas de forma mais abrangente
             partes_links = []
             
-            # Diferentes textos que podem indicar o link das partes
+            # 1. Buscar por textos relacionados a partes
             textos_partes = [
                 "e outras",
-                "outras partes", 
-                "partes envolvidas",
-                "participantes",
+                "outras",
+                "partes envolvidas", 
                 "partes",
+                "participantes",
+                "dados das partes",
+                "informações das partes",
                 "mais informações",
-                "detalhes"
+                "detalhes",
+                "ver todas",
+                "visualizar partes"
             ]
             
-            # Procurar links que podem levar às partes
+            logger.info("🔍 Procurando links por texto...")
             for texto in textos_partes:
                 try:
-                    links = session['driver'].find_elements(By.PARTIAL_LINK_TEXT, texto)
-                    if links:
-                        partes_links.extend(links)
-                        logger.info(f"✅ Encontrado link para partes: '{texto}'")
+                    # Buscar por texto exato e parcial
+                    links_exato = session['driver'].find_elements(By.LINK_TEXT, texto)
+                    links_parcial = session['driver'].find_elements(By.PARTIAL_LINK_TEXT, texto)
+                    
+                    if links_exato:
+                        partes_links.extend(links_exato)
+                        logger.info(f"✅ Encontrado link exato: '{texto}'")
+                        break
+                    elif links_parcial:
+                        partes_links.extend(links_parcial)
+                        logger.info(f"✅ Encontrado link parcial: '{texto}'")
                         break
                 except:
                     continue
             
-            # Se não encontrou por texto, procurar por padrões de onclick ou href
+            # 2. Buscar por padrões mais específicos do PROJUDI
             if not partes_links:
+                logger.info("🔍 Procurando por padrões PROJUDI...")
                 try:
-                    # Procurar elementos com onclick que contenham "parte" ou "participante"
-                    elementos_onclick = session['driver'].find_elements(By.XPATH, 
-                        "//a[contains(@onclick, 'parte') or contains(@onclick, 'Parte') or contains(@onclick, 'participante')]")
-                    if elementos_onclick:
-                        partes_links.extend(elementos_onclick)
-                        logger.info("✅ Encontrado link para partes via onclick")
+                    # Buscar links com href contendo palavras-chave
+                    xpath_queries = [
+                        "//a[contains(@href, 'parte') or contains(@href, 'Parte')]",
+                        "//a[contains(@href, 'participante') or contains(@href, 'Participante')]",
+                        "//a[contains(@href, 'dados') and contains(@href, 'parte')]",
+                        "//a[contains(text(), 'outras') or contains(text(), 'Outras')]",
+                        "//a[contains(text(), 'parte') or contains(text(), 'Parte')]",
+                        "//a[contains(@onclick, 'parte') or contains(@onclick, 'Parte')]",
+                        "//a[contains(@onclick, 'participante')]"
+                    ]
+                    
+                    for xpath in xpath_queries:
+                        try:
+                            elementos = session['driver'].find_elements(By.XPATH, xpath)
+                            if elementos:
+                                partes_links.extend(elementos)
+                                logger.info(f"✅ Encontrado via xpath: {xpath}")
+                                break
+                        except:
+                            continue
                 except:
                     pass
             
-            # Se ainda não encontrou, procurar por padrões na página
+            # 3. Buscar em abas ou menus suspensos 
             if not partes_links:
+                logger.info("🔍 Procurando em abas e menus...")
                 try:
-                    # Procurar por qualquer link que possa ser das partes
-                    soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
-                    links_candidatos = soup.find_all('a', href=re.compile(r'(parte|Parte|participante|Participante)', re.I))
-                    if links_candidatos:
-                        # Tentar clicar no primeiro link encontrado
-                        for link in links_candidatos:
-                            href = link.get('href', '')
-                            if href:
-                                try:
-                                    elemento = session['driver'].find_element(By.XPATH, f"//a[@href='{href}']")
-                                    partes_links.append(elemento)
-                                    logger.info(f"✅ Encontrado link para partes via href: {href}")
-                                    break
-                                except:
-                                    continue
+                    # Buscar por elementos tipo tab, button ou menu
+                    elementos_interativos = [
+                        "//button[contains(text(), 'parte') or contains(text(), 'outras')]",
+                        "//div[@class='tab' or @class='menu']//a[contains(text(), 'parte') or contains(text(), 'outras')]",
+                        "//li//a[contains(text(), 'parte') or contains(text(), 'outras')]",
+                        "//span[contains(text(), 'parte') or contains(text(), 'outras')]//ancestor::a",
+                        "//td//a[contains(text(), 'outras') or contains(text(), 'parte')]"
+                    ]
+                    
+                    for xpath in elementos_interativos:
+                        try:
+                            elementos = session['driver'].find_elements(By.XPATH, xpath)
+                            if elementos:
+                                partes_links.extend(elementos)
+                                logger.info(f"✅ Encontrado em interface: {xpath}")
+                                break
+                        except:
+                            continue
                 except:
                     pass
+            
+            # 4. Como último recurso, buscar qualquer link que possa ser relevante
+            if not partes_links:
+                logger.info("🔍 Busca ampla por links relevantes...")
+                try:
+                    soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
+                    
+                    # Buscar todos os links e analisar seu conteúdo
+                    todos_links = soup.find_all('a', href=True)
+                    for link in todos_links:
+                        texto_link = link.get_text(strip=True).lower()
+                        href_link = link.get('href', '').lower()
+                        
+                        # Verificar se o link pode ser das partes
+                        palavras_chave = ['parte', 'outras', 'participante', 'dados', 'informações']
+                        
+                        if any(palavra in texto_link or palavra in href_link for palavra in palavras_chave):
+                            try:
+                                # Tentar encontrar o elemento na página
+                                href_original = link.get('href')
+                                if href_original:
+                                    elemento = session['driver'].find_element(By.XPATH, f"//a[@href='{href_original}']")
+                                    partes_links.append(elemento)
+                                    logger.info(f"✅ Encontrado link candidato: '{texto_link}' - {href_original}")
+                                    break
+                            except:
+                                continue
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro na busca ampla: {e}")
             
             if not partes_links:
                 logger.warning("⚠️ Link para partes envolvidas não encontrado")
@@ -1125,11 +1187,52 @@ class ProjudiAPI:
                 if partes:
                     break
             
+            # Tentar voltar à página principal do processo
+            try:
+                logger.info("🔙 Tentando voltar à página principal do processo...")
+                
+                # Tentar diferentes métodos para voltar
+                voltar_sucesso = False
+                
+                # 1. Usar botão "Voltar" do navegador
+                try:
+                    session['driver'].back()
+                    time.sleep(2)
+                    voltar_sucesso = True
+                    logger.info("✅ Voltou usando botão voltar do navegador")
+                except:
+                    pass
+                
+                # 2. Se não conseguiu, tentar encontrar botão "Voltar" na página
+                if not voltar_sucesso:
+                    try:
+                        botoes_voltar = session['driver'].find_elements(By.XPATH, 
+                            "//a[contains(text(), 'Voltar') or contains(text(), 'voltar') or contains(@onclick, 'history.back')]")
+                        if botoes_voltar:
+                            botoes_voltar[0].click()
+                            time.sleep(2)
+                            voltar_sucesso = True
+                            logger.info("✅ Voltou usando botão voltar da página")
+                    except:
+                        pass
+                
+                if not voltar_sucesso:
+                    logger.warning("⚠️ Não conseguiu voltar automaticamente à página principal")
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ Erro ao tentar voltar: {e}")
+            
             logger.info(f"✅ {len(partes)} partes envolvidas extraídas")
             return partes
             
         except Exception as e:
             logger.error(f"❌ Erro ao extrair partes envolvidas: {e}")
+            # Tentar voltar mesmo em caso de erro
+            try:
+                session['driver'].back()
+                time.sleep(1)
+            except:
+                pass
             return []
     
     def _solicitar_acesso_processo(self, session):

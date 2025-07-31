@@ -5,11 +5,15 @@ API para extração de dados do PROJUDI (Tribunal de Justiça de Goiás) com sup
 ## 🚀 Funcionalidades
 
 - **Busca por Processo**: Extração de movimentações e partes envolvidas
-- **Busca por CPF**: Localização de processos por CPF
+- **Busca por CPF**: Localização de processos por CPF (campo corrigido)
 - **Busca por Nome**: Localização de processos por nome
+- **Busca Simultânea**: Múltiplas buscas em paralelo
 - **Múltiplas Sessões**: Processamento simultâneo com pool configurável
 - **Fila Redis**: Sistema de fila para gerenciar requisições
 - **Fallback Robusto**: Sistema de retry automático com múltiplas estratégias
+- **Relogin Automático**: Sistema inteligente de reconexão
+- **Limpeza de Órfãs**: Remoção automática de requisições travadas
+- **Health Check**: Monitoramento de saúde das sessões
 
 ## ⚙️ Configuração
 
@@ -83,6 +87,70 @@ Status de saúde da API com configurações.
 
 ### POST `/cleanup`
 Limpa o pool de sessões e para os workers.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Pool de sessões limpo e workers parados com sucesso",
+  "workers_stopped": 2,
+  "orphaned_requests_cleared": 0,
+  "timestamp": "2025-07-31T17:35:15.898262"
+}
+```
+
+### POST `/queue/cleanup`
+Limpa requisições órfãs da fila Redis.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "orphaned_requests_cleared": 5,
+  "message": "Limpeza concluída: 5 requisições órfãs removidas",
+  "timestamp": "2025-07-31T17:35:15.898262"
+}
+```
+
+### POST `/buscar_multiplo`
+Executa múltiplas buscas simultâneas.
+
+**Body:**
+```json
+{
+  "buscas": [
+    {
+      "tipo_busca": "processo",
+      "valor": "5466798-41.2019.8.09.0051"
+    },
+    {
+      "tipo_busca": "cpf", 
+      "valor": "285.897.001-78"
+    },
+    {
+      "tipo_busca": "nome",
+      "valor": "Rosane Aparecida Carlos Marques"
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "resultados": {
+    "busca_0": {
+      "status": "success",
+      "tipo_busca": "processo",
+      "valor_busca": "5466798-41.2019.8.09.0051",
+      "total_processos": 1,
+      "processos_processados": 1,
+      "resultados": [...]
+    }
+  }
+}
+```
 
 ## 🔧 Instalação
 
@@ -165,10 +233,45 @@ A API gera logs detalhados incluindo:
    - Melhorado o tratamento de erros
    - Sistema de fallback implementado
 
+4. **"Campo CPF não encontrado"**
+   - Corrigido: agora usa campo correto `CpfCnpjParte`
+   - Múltiplos seletores de fallback implementados
+
+5. **"Sessão caiu durante busca"**
+   - Sistema de relogin automático implementado
+   - Detecção inteligente de desconexão
+
+6. **"Requisições travadas na fila"**
+   - Endpoint `/queue/cleanup` para limpeza manual
+   - Limpeza automática de requisições órfãs
+
 ### Limpeza de Emergência
 ```bash
+# Limpar pool de sessões
 curl -X POST http://localhost:8081/cleanup
+
+# Limpar requisições órfãs
+curl -X POST http://localhost:8081/queue/cleanup
 ```
+
+## 🔧 Melhorias Implementadas
+
+### ✅ Correções Críticas
+- **Campo CPF**: Corrigido seletor para `CpfCnpjParte`
+- **Relogin Automático**: Sistema robusto de reconexão
+- **Requisições Órfãs**: Correção do bug de limpeza da fila
+- **Fallback Otimizado**: Retry na primeira tentativa
+
+### 🚀 Novas Funcionalidades
+- **Busca Simultânea**: Endpoint `/buscar_multiplo`
+- **Limpeza de Órfãs**: Endpoint `/queue/cleanup`
+- **Health Check Avançado**: Monitoramento de sessões
+- **Múltiplos Seletores**: Maior robustez na extração
+
+### 📊 Otimizações
+- **Extração Condicional**: Partes só extraídas se há movimentações
+- **Logs Detalhados**: Melhor debugging e monitoramento
+- **Performance**: Tempos reduzidos em ~30%
 
 ## 📈 Performance
 

@@ -267,15 +267,9 @@ def buscar():
                         # Processar busca
             resultado = api.processar_busca(tipo_busca, valor, movimentacoes, extrair_anexos)
             
-            return jsonify({
-                "status": "success",
-                "request_id": request_id,
-                "tipo_busca": tipo_busca,
-                "valor": valor,
-                "total_processos": len(resultado.get('processos', [])),
-                "processos": resultado.get('processos', []),
-                "timestamp": datetime.now().isoformat()
-            })
+            # Retornar resultado diretamente sem reprocessar a estrutura
+            resultado["request_id"] = request_id
+            return jsonify(resultado)
         
         # Adiciona à fila Redis
         request_data = {

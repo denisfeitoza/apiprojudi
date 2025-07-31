@@ -941,19 +941,20 @@ class ProjudiAPI:
             # Procurar pelo link das partes envolvidas de forma mais abrangente
             partes_links = []
             
-            # 1. Buscar por textos relacionados a partes
+            # 1. Buscar por textos relacionados a partes (baseado na interface real do PROJUDI)
             textos_partes = [
-                "e outras",
-                "outras",
+                "Visualizar Partes no Processo",
+                "Visualizar todas as partes", 
+                "Visualizar partes",
+                "Ver partes",
+                "Partes no Processo",
                 "partes envolvidas", 
-                "partes",
-                "participantes",
                 "dados das partes",
                 "informações das partes",
-                "mais informações",
-                "detalhes",
-                "ver todas",
-                "visualizar partes"
+                "e outras",
+                "outras",
+                "partes",
+                "participantes"
             ]
             
             logger.info("🔍 Procurando links por texto...")
@@ -978,8 +979,12 @@ class ProjudiAPI:
             if not partes_links:
                 logger.info("🔍 Procurando por padrões PROJUDI...")
                 try:
-                    # Buscar links com href contendo palavras-chave
+                    # Buscar links com href contendo palavras-chave específicas do PROJUDI
                     xpath_queries = [
+                        "//a[contains(text(), 'Visualizar Partes') or contains(text(), 'Visualizar partes')]",
+                        "//a[contains(text(), 'Visualizar todas as partes')]", 
+                        "//a[contains(text(), 'Ver partes') or contains(text(), 'Ver Partes')]",
+                        "//a[contains(text(), 'Partes no Processo')]",
                         "//a[contains(@href, 'parte') or contains(@href, 'Parte')]",
                         "//a[contains(@href, 'participante') or contains(@href, 'Participante')]",
                         "//a[contains(@href, 'dados') and contains(@href, 'parte')]",
@@ -1081,15 +1086,85 @@ class ProjudiAPI:
             soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
             partes = []
             
-            # Procurar por diferentes padrões de estrutura da página de partes
-            # Tentar encontrar tabelas, divs ou listas que contenham informações das partes
-            estruturas_candidatas = [
-                soup.find_all('table'),
-                soup.find_all('div', class_=re.compile(r'parte|participante', re.I)),
-                soup.find_all('div', {'id': re.compile(r'parte|participante', re.I)}),
-                soup.find_all('tr'),
-                soup.find_all('div')
-            ]
+            # Primeiro, tentar extrair usando a estrutura específica do PROJUDI (POLO ATIVO/PASSIVO)
+            logger.info("🔍 Procurando por estrutura POLO ATIVO/PASSIVO...")
+            
+            polos_encontrados = False
+            
+            # Buscar por elementos que contenham "POLO ATIVO" ou "POLO PASSIVO"
+            elementos_polo = soup.find_all(text=re.compile(r'POLO\s+(ATIVO|PASSIVO)', re.I))
+            
+            for elemento_texto in elementos_polo:
+                try:
+                    # Encontrar o elemento pai que contém o polo
+                    elemento_pai = elemento_texto.parent
+                    while elemento_pai and elemento_pai.name:
+                        texto_completo = elemento_pai.get_text()
+                        
+                        # Verificar se é POLO ATIVO ou PASSIVO
+                        if 'POLO ATIVO' in texto_completo.upper():
+                            tipo_polo = 'Polo Ativo'
+                        elif 'POLO PASSIVO' in texto_completo.upper():
+                            tipo_polo = 'Polo Passivo'
+                        else:
+                            elemento_pai = elemento_pai.parent
+                            continue
+                        
+                        # Extrair nome do polo
+                        nome_match = re.search(r'Nome\s+([^\n\r]+)', texto_completo, re.I)
+                        nome = nome_match.group(1).strip() if nome_match else ''
+                        
+                        # Se não encontrou nome com "Nome", tentar extrair o texto após o tipo do polo
+                        if not nome:
+                            texto_limpo = re.sub(r'POLO\s+(ATIVO|PASSIVO)', '', texto_completo, flags=re.I).strip()
+                            linhas = [linha.strip() for linha in texto_limpo.split('\n') if linha.strip()]
+                            if linhas:
+                                # Pegar a primeira linha não vazia que não seja "Nome"
+                                for linha in linhas:
+                                    if linha.lower() != 'nome' and len(linha) > 3:
+                                        nome = linha
+                                        break
+                        
+                        if nome:
+                            parte_info = {
+                                'nome': nome,
+                                'tipo': tipo_polo,
+                                'cpf_cnpj': '',
+                                'rg': '',
+                                'endereco': '',
+                                'telefone': '',
+                                'email': '',
+                                'advogado': '',
+                                'oab': '',
+                                'html_completo': str(elemento_pai),
+                                'texto_completo': texto_completo
+                            }
+                            
+                            # Tentar extrair mais informações do texto
+                            self._extrair_detalhes_parte(parte_info, texto_completo)
+                            
+                            partes.append(parte_info)
+                            polos_encontrados = True
+                            logger.info(f"✅ Encontrado {tipo_polo}: {nome}")
+                        
+                        break
+                        
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao processar polo: {e}")
+                    continue
+            
+            # Se não encontrou polos, usar estratégia anterior (busca geral)
+            if not polos_encontrados:
+                logger.info("🔍 Estrutura POLO não encontrada, usando busca geral...")
+                
+                # Procurar por diferentes padrões de estrutura da página de partes
+                estruturas_candidatas = [
+                    soup.find_all('table'),
+                    soup.find_all('div', class_=re.compile(r'parte|participante|polo', re.I)),
+                    soup.find_all('div', {'id': re.compile(r'parte|participante|polo', re.I)}),
+                    soup.find_all('tr'),
+                    soup.find_all('div')
+                ]
             
             for estruturas in estruturas_candidatas:
                 if not estruturas:
@@ -1122,51 +1197,15 @@ class ProjudiAPI:
                         # Tentar extrair informações específicas usando regex
                         texto_completo = elemento.get_text()
                         
-                        # Nome (geralmente após "Nome:" ou em posição de destaque)
-                        nome_match = re.search(r'(?:Nome:|nome:)\s*([^\n\r]+)', texto_completo, re.I)
-                        if nome_match:
-                            parte_info['nome'] = nome_match.group(1).strip()
+                        # Usar função auxiliar para extrair detalhes
+                        self._extrair_detalhes_parte(parte_info, texto_completo)
                         
-                        # CPF/CNPJ
-                        cpf_match = re.search(r'(?:CPF|CNPJ)[\s:]*(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2})', texto_completo, re.I)
-                        if cpf_match:
-                            parte_info['cpf_cnpj'] = cpf_match.group(1)
-                        
-                        # RG
-                        rg_match = re.search(r'RG[\s:]*([^\n\r,]+)', texto_completo, re.I)
-                        if rg_match:
-                            parte_info['rg'] = rg_match.group(1).strip()
-                        
-                        # Endereço
-                        endereco_match = re.search(r'(?:Endereço|endereço)[\s:]*([^\n\r]+)', texto_completo, re.I)
-                        if endereco_match:
-                            parte_info['endereco'] = endereco_match.group(1).strip()
-                        
-                        # Telefone
-                        telefone_match = re.search(r'(?:Telefone|telefone|Tel|tel)[\s:]*([^\n\r,]+)', texto_completo, re.I)
-                        if telefone_match:
-                            parte_info['telefone'] = telefone_match.group(1).strip()
-                        
-                        # Email
-                        email_match = re.search(r'(?:E-mail|email|Email)[\s:]*([^\n\r\s]+@[^\n\r\s]+)', texto_completo, re.I)
-                        if email_match:
-                            parte_info['email'] = email_match.group(1).strip()
-                        
-                        # Advogado
-                        advogado_match = re.search(r'(?:Advogado|advogado)[\s:]*([^\n\r]+)', texto_completo, re.I)
-                        if advogado_match:
-                            parte_info['advogado'] = advogado_match.group(1).strip()
-                        
-                        # OAB
-                        oab_match = re.search(r'OAB[\s:]*([^\n\r,]+)', texto_completo, re.I)
-                        if oab_match:
-                            parte_info['oab'] = oab_match.group(1).strip()
-                        
-                        # Tipo da parte (autor, réu, etc.)
-                        for tipo in ['autor', 'réu', 'requerente', 'requerido', 'impetrante', 'impetrado', 'apelante', 'apelado']:
-                            if tipo in texto_elemento:
-                                parte_info['tipo'] = tipo.title()
-                                break
+                        # Tipo da parte (autor, réu, etc.) - só se não foi definido ainda
+                        if not parte_info['tipo']:
+                            for tipo in ['autor', 'réu', 'requerente', 'requerido', 'impetrante', 'impetrado', 'apelante', 'apelado']:
+                                if tipo in texto_elemento:
+                                    parte_info['tipo'] = tipo.title()
+                                    break
                         
                         # Só adicionar se encontrou pelo menos nome ou alguma informação relevante
                         if (parte_info['nome'] or parte_info['cpf_cnpj'] or 
@@ -1234,6 +1273,53 @@ class ProjudiAPI:
             except:
                 pass
             return []
+    
+    def _extrair_detalhes_parte(self, parte_info, texto_completo):
+        """Função auxiliar para extrair detalhes específicos de uma parte"""
+        try:
+            # Nome (geralmente após "Nome:" ou em posição de destaque)
+            if not parte_info['nome']:
+                nome_match = re.search(r'(?:Nome:|nome:)\s*([^\n\r]+)', texto_completo, re.I)
+                if nome_match:
+                    parte_info['nome'] = nome_match.group(1).strip()
+            
+            # CPF/CNPJ
+            cpf_match = re.search(r'(?:CPF|CNPJ)[\s:]*(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2})', texto_completo, re.I)
+            if cpf_match:
+                parte_info['cpf_cnpj'] = cpf_match.group(1)
+            
+            # RG
+            rg_match = re.search(r'RG[\s:]*([^\n\r,]+)', texto_completo, re.I)
+            if rg_match:
+                parte_info['rg'] = rg_match.group(1).strip()
+            
+            # Endereço
+            endereco_match = re.search(r'(?:Endereço|endereço)[\s:]*([^\n\r]+)', texto_completo, re.I)
+            if endereco_match:
+                parte_info['endereco'] = endereco_match.group(1).strip()
+            
+            # Telefone
+            telefone_match = re.search(r'(?:Telefone|telefone|Tel|tel)[\s:]*([^\n\r,]+)', texto_completo, re.I)
+            if telefone_match:
+                parte_info['telefone'] = telefone_match.group(1).strip()
+            
+            # Email
+            email_match = re.search(r'(?:E-mail|email|Email)[\s:]*([^\n\r\s]+@[^\n\r\s]+)', texto_completo, re.I)
+            if email_match:
+                parte_info['email'] = email_match.group(1).strip()
+            
+            # Advogado
+            advogado_match = re.search(r'(?:Advogado|advogado)[\s:]*([^\n\r]+)', texto_completo, re.I)
+            if advogado_match:
+                parte_info['advogado'] = advogado_match.group(1).strip()
+            
+            # OAB
+            oab_match = re.search(r'OAB[\s:]*([^\n\r,]+)', texto_completo, re.I)
+            if oab_match:
+                parte_info['oab'] = oab_match.group(1).strip()
+                
+        except Exception as e:
+            logger.warning(f"⚠️ Erro ao extrair detalhes da parte: {e}")
     
     def _solicitar_acesso_processo(self, session):
         """Solicita acesso aos anexos do processo inteiro"""

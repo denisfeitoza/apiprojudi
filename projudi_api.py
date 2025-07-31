@@ -929,6 +929,208 @@ class ProjudiAPI:
         except Exception as e:
             logger.error(f"❌ Erro ao extrair movimentações: {e}")
             return []
+
+    def extrair_partes_envolvidas(self, session, processo_info):
+        """Extrai as partes envolvidas de um processo"""
+        try:
+            logger.info("👥 Extraindo partes envolvidas...")
+            
+            # Procurar pelo link das partes envolvidas
+            partes_links = []
+            
+            # Diferentes textos que podem indicar o link das partes
+            textos_partes = [
+                "e outras",
+                "outras partes", 
+                "partes envolvidas",
+                "participantes",
+                "partes",
+                "mais informações",
+                "detalhes"
+            ]
+            
+            # Procurar links que podem levar às partes
+            for texto in textos_partes:
+                try:
+                    links = session['driver'].find_elements(By.PARTIAL_LINK_TEXT, texto)
+                    if links:
+                        partes_links.extend(links)
+                        logger.info(f"✅ Encontrado link para partes: '{texto}'")
+                        break
+                except:
+                    continue
+            
+            # Se não encontrou por texto, procurar por padrões de onclick ou href
+            if not partes_links:
+                try:
+                    # Procurar elementos com onclick que contenham "parte" ou "participante"
+                    elementos_onclick = session['driver'].find_elements(By.XPATH, 
+                        "//a[contains(@onclick, 'parte') or contains(@onclick, 'Parte') or contains(@onclick, 'participante')]")
+                    if elementos_onclick:
+                        partes_links.extend(elementos_onclick)
+                        logger.info("✅ Encontrado link para partes via onclick")
+                except:
+                    pass
+            
+            # Se ainda não encontrou, procurar por padrões na página
+            if not partes_links:
+                try:
+                    # Procurar por qualquer link que possa ser das partes
+                    soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
+                    links_candidatos = soup.find_all('a', href=re.compile(r'(parte|Parte|participante|Participante)', re.I))
+                    if links_candidatos:
+                        # Tentar clicar no primeiro link encontrado
+                        for link in links_candidatos:
+                            href = link.get('href', '')
+                            if href:
+                                try:
+                                    elemento = session['driver'].find_element(By.XPATH, f"//a[@href='{href}']")
+                                    partes_links.append(elemento)
+                                    logger.info(f"✅ Encontrado link para partes via href: {href}")
+                                    break
+                                except:
+                                    continue
+                except:
+                    pass
+            
+            if not partes_links:
+                logger.warning("⚠️ Link para partes envolvidas não encontrado")
+                return []
+            
+            # Clicar no primeiro link encontrado
+            link_partes = partes_links[0]
+            try:
+                session['driver'].execute_script("arguments[0].click();", link_partes)
+                logger.info("🔗 Clicou no link das partes envolvidas")
+                time.sleep(3)
+            except:
+                try:
+                    link_partes.click()
+                    logger.info("🔗 Clicou no link das partes envolvidas (método alternativo)")
+                    time.sleep(3)
+                except Exception as e:
+                    logger.error(f"❌ Erro ao clicar no link das partes: {e}")
+                    return []
+            
+            # Aguardar carregamento da página das partes
+            time.sleep(2)
+            
+            # Extrair informações das partes
+            soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
+            partes = []
+            
+            # Procurar por diferentes padrões de estrutura da página de partes
+            # Tentar encontrar tabelas, divs ou listas que contenham informações das partes
+            estruturas_candidatas = [
+                soup.find_all('table'),
+                soup.find_all('div', class_=re.compile(r'parte|participante', re.I)),
+                soup.find_all('div', {'id': re.compile(r'parte|participante', re.I)}),
+                soup.find_all('tr'),
+                soup.find_all('div')
+            ]
+            
+            for estruturas in estruturas_candidatas:
+                if not estruturas:
+                    continue
+                    
+                for elemento in estruturas:
+                    texto_elemento = elemento.get_text(strip=True).lower()
+                    
+                    # Verificar se o elemento contém informações de uma parte
+                    if any(palavra in texto_elemento for palavra in [
+                        'advogado', 'nome:', 'cpf:', 'rg:', 'endereço:', 'telefone:',
+                        'autor', 'réu', 'requerente', 'requerido', 'impetrante',
+                        'impetrado', 'apelante', 'apelado'
+                    ]):
+                        # Extrair informações estruturadas
+                        parte_info = {
+                            'nome': '',
+                            'tipo': '',
+                            'cpf_cnpj': '',
+                            'rg': '',
+                            'endereco': '',
+                            'telefone': '',
+                            'email': '',
+                            'advogado': '',
+                            'oab': '',
+                            'html_completo': str(elemento),
+                            'texto_completo': elemento.get_text(strip=True)
+                        }
+                        
+                        # Tentar extrair informações específicas usando regex
+                        texto_completo = elemento.get_text()
+                        
+                        # Nome (geralmente após "Nome:" ou em posição de destaque)
+                        nome_match = re.search(r'(?:Nome:|nome:)\s*([^\n\r]+)', texto_completo, re.I)
+                        if nome_match:
+                            parte_info['nome'] = nome_match.group(1).strip()
+                        
+                        # CPF/CNPJ
+                        cpf_match = re.search(r'(?:CPF|CNPJ)[\s:]*(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2})', texto_completo, re.I)
+                        if cpf_match:
+                            parte_info['cpf_cnpj'] = cpf_match.group(1)
+                        
+                        # RG
+                        rg_match = re.search(r'RG[\s:]*([^\n\r,]+)', texto_completo, re.I)
+                        if rg_match:
+                            parte_info['rg'] = rg_match.group(1).strip()
+                        
+                        # Endereço
+                        endereco_match = re.search(r'(?:Endereço|endereço)[\s:]*([^\n\r]+)', texto_completo, re.I)
+                        if endereco_match:
+                            parte_info['endereco'] = endereco_match.group(1).strip()
+                        
+                        # Telefone
+                        telefone_match = re.search(r'(?:Telefone|telefone|Tel|tel)[\s:]*([^\n\r,]+)', texto_completo, re.I)
+                        if telefone_match:
+                            parte_info['telefone'] = telefone_match.group(1).strip()
+                        
+                        # Email
+                        email_match = re.search(r'(?:E-mail|email|Email)[\s:]*([^\n\r\s]+@[^\n\r\s]+)', texto_completo, re.I)
+                        if email_match:
+                            parte_info['email'] = email_match.group(1).strip()
+                        
+                        # Advogado
+                        advogado_match = re.search(r'(?:Advogado|advogado)[\s:]*([^\n\r]+)', texto_completo, re.I)
+                        if advogado_match:
+                            parte_info['advogado'] = advogado_match.group(1).strip()
+                        
+                        # OAB
+                        oab_match = re.search(r'OAB[\s:]*([^\n\r,]+)', texto_completo, re.I)
+                        if oab_match:
+                            parte_info['oab'] = oab_match.group(1).strip()
+                        
+                        # Tipo da parte (autor, réu, etc.)
+                        for tipo in ['autor', 'réu', 'requerente', 'requerido', 'impetrante', 'impetrado', 'apelante', 'apelado']:
+                            if tipo in texto_elemento:
+                                parte_info['tipo'] = tipo.title()
+                                break
+                        
+                        # Só adicionar se encontrou pelo menos nome ou alguma informação relevante
+                        if (parte_info['nome'] or parte_info['cpf_cnpj'] or 
+                            parte_info['advogado'] or len(parte_info['texto_completo']) > 50):
+                            
+                            # Evitar duplicatas
+                            duplicata = False
+                            for parte_existente in partes:
+                                if (parte_existente['texto_completo'] == parte_info['texto_completo'] or
+                                    (parte_info['nome'] and parte_existente['nome'] == parte_info['nome'])):
+                                    duplicata = True
+                                    break
+                            
+                            if not duplicata:
+                                partes.append(parte_info)
+                
+                # Se encontrou partes, parar de procurar
+                if partes:
+                    break
+            
+            logger.info(f"✅ {len(partes)} partes envolvidas extraídas")
+            return partes
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao extrair partes envolvidas: {e}")
+            return []
     
     def _solicitar_acesso_processo(self, session):
         """Solicita acesso aos anexos do processo inteiro"""
@@ -1197,6 +1399,11 @@ class ProjudiAPI:
                     if not movimentacoes:
                         movimentacoes = []
                     
+                    # Extrair partes envolvidas diretamente
+                    partes_envolvidas = self._robust_operation(session, self.extrair_partes_envolvidas, "Extrair Partes Envolvidas", processo_ficticio)
+                    if not partes_envolvidas:
+                        partes_envolvidas = []
+                    
                     # Criar resultado único
                     resultado_processo = {
                         "numero": valor,
@@ -1205,7 +1412,9 @@ class ProjudiAPI:
                         "assunto": "Busca Direta",
                         "movimentacoes": movimentacoes,
                         "total_movimentacoes": len(movimentacoes),
-                        "ultima_movimentacao": movimentacoes[-1]['numero'] if movimentacoes else ''
+                        "ultima_movimentacao": movimentacoes[-1]['numero'] if movimentacoes else '',
+                        "partes_envolvidas": partes_envolvidas,
+                        "total_partes": len(partes_envolvidas)
                     }
                     
                     # Calcular tempo total
@@ -1260,6 +1469,11 @@ class ProjudiAPI:
                         if not movimentacoes:
                             movimentacoes = []
                         
+                        # Extrair partes envolvidas com sistema robusto
+                        partes_envolvidas = self._robust_operation(session, self.extrair_partes_envolvidas, "Extrair Partes Envolvidas", processo)
+                        if not partes_envolvidas:
+                            partes_envolvidas = []
+                        
                         # Adicionar ao resultado
                         resultado_processo = {
                             "numero": str(i+1),
@@ -1268,7 +1482,9 @@ class ProjudiAPI:
                             "assunto": processo.get('assunto', ''),
                             "movimentacoes": movimentacoes,
                             "total_movimentacoes": len(movimentacoes),
-                            "ultima_movimentacao": movimentacoes[-1]['numero'] if movimentacoes else ''
+                            "ultima_movimentacao": movimentacoes[-1]['numero'] if movimentacoes else '',
+                            "partes_envolvidas": partes_envolvidas,
+                            "total_partes": len(partes_envolvidas)
                         }
                         resultados.append(resultado_processo)
                         

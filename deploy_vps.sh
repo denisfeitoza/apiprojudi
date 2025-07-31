@@ -161,7 +161,7 @@ show_info() {
     echo "   - Parar: docker compose down"
     echo "   - Atualizar: ./deploy_vps.sh"
     echo ""
-    echo "📖 Documentação: README_API_PROJUDI_V2.md"
+    echo "📖 Documentação: README.md"
     echo ""
     echo "🔧 Configuração: Edite o arquivo .env para suas credenciais"
     echo ""

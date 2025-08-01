@@ -1909,10 +1909,14 @@ class ProjudiAPI:
         try:
             logger.info("📋 Extraindo movimentações da página de navegação de arquivos...")
             
-            # 1. Primeiro, acessar a página de navegação de arquivos
-            if not self._acessar_pagina_navegacao_arquivos(session):
-                logger.error("❌ Falha ao acessar página de navegação de arquivos")
-                return []
+            # 1. Verificar se já estamos na página de navegação
+            if "TabelaArquivos" not in session['driver'].page_source:
+                # Se não estamos, acessar a página de navegação de arquivos
+                if not self._acessar_pagina_navegacao_arquivos(session):
+                    logger.error("❌ Falha ao acessar página de navegação de arquivos")
+                    return []
+            else:
+                logger.info("ℹ️ Já estamos na página de navegação de arquivos")
             
             # 2. Aguardar carregamento da tabela
             time.sleep(3)
@@ -2097,75 +2101,97 @@ class ProjudiAPI:
             return False
     
     def _extrair_anexos_movimentacao_navegacao(self, session, id_movimentacao):
-        """Extrai anexos de uma movimentação específica na página de navegação usando o ID"""
+        """Extrai anexos de uma movimentação específica na página de navegação - SEM CLICAR NO BOTÃO"""
         try:
-            logger.info(f"📎 Verificando anexos para movimentação ID: {id_movimentacao}")
+            logger.info(f"📎 Extraindo anexos diretamente da página para movimentação ID: {id_movimentacao}")
             
-            # Clicar no botão de anexos da movimentação usando o ID
-            try:
-                # Usar o ID da movimentação para encontrar o botão
-                btn_anexo = session['driver'].find_element(
-                    By.ID, 
-                    f"MostrarArquivos_{id_movimentacao}"
-                )
-                
-                # Tentar fechar overlay se existir
-                try:
-                    overlay = session['driver'].find_element(By.CLASS_NAME, "ui-widget-overlay")
-                    if overlay.is_displayed():
-                        session['driver'].execute_script("arguments[0].style.display = 'none';", overlay)
-                        time.sleep(1)
-                        logger.info("✅ Overlay fechado")
-                except:
-                    pass
-                
-                # Scroll para o botão
-                session['driver'].execute_script("arguments[0].scrollIntoView(true);", btn_anexo)
-                time.sleep(1)
-                
-                # Tentar clicar com JavaScript se o clique normal falhar
-                try:
-                    btn_anexo.click()
-                except:
-                    session['driver'].execute_script("arguments[0].click();", btn_anexo)
-                
-                time.sleep(2)
-                logger.info(f"✅ Botão de anexos clicado para movimentação ID: {id_movimentacao}")
-            except Exception as e:
-                logger.warning(f"⚠️ Não foi possível clicar no botão de anexos: {e}")
-                return []
+            # Extrair anexos diretamente da página de navegação (sem clicar em botões)
+            anexos = []
             
-            # Aguardar carregamento dos anexos
-            time.sleep(3)
+            # 1. Buscar por links diretos com extensões de arquivo
+            links_arquivos = session['driver'].find_elements(
+                By.XPATH, 
+                "//a[contains(text(), '.pdf') or contains(text(), '.html') or contains(text(), '.doc') or contains(text(), '.docx') or contains(text(), '.txt') or contains(text(), '.jpg') or contains(text(), '.jpeg') or contains(text(), '.png')]"
+            )
             
-            # Verificar se há anexos disponíveis
-            try:
-                # Tentar encontrar links de anexos
-                links_anexos = session['driver'].find_elements(
-                    By.XPATH, 
-                    "//a[contains(@href, 'DownloadArquivo') or contains(@href, 'VisualizarArquivo')]"
-                )
-                
-                if links_anexos:
-                    anexos = []
-                    for link in links_anexos:
-                        href = link.get_attribute('href')
-                        texto = link.get_text(strip=True)
+            for link in links_arquivos:
+                href = link.get_attribute('href')
+                texto = link.text.strip()
+                if href and texto and not href.startswith('javascript:'):
+                    anexos.append({
+                        'url': href,
+                        'nome': texto,
+                        'tipo': 'arquivo_direto'
+                    })
+            
+            # 2. Buscar por links BuscaProcesso com Id_MovimentacaoArquivo
+            links_busca = session['driver'].find_elements(
+                By.XPATH, 
+                "//a[contains(@href, 'BuscaProcesso') and contains(@href, 'Id_MovimentacaoArquivo')]"
+            )
+            
+            for link in links_busca:
+                href = link.get_attribute('href')
+                texto = link.text.strip()
+                if href and not href.startswith('javascript:'):
+                    # Extrair ID do anexo da URL
+                    import re
+                    match = re.search(r"Id_MovimentacaoArquivo=(\d+)", href)
+                    if match:
+                        anexo_id = match.group(1)
                         anexos.append({
                             'url': href,
-                            'nome': texto or 'Anexo',
-                            'tipo': 'download'
+                            'nome': texto or f'Anexo_{anexo_id}',
+                            'tipo': 'busca_processo'
                         })
-                    
-                    logger.info(f"✅ {len(anexos)} anexos encontrados para movimentação {id_movimentacao}")
-                    return anexos
-                else:
-                    logger.info(f"ℹ️ Nenhum anexo encontrado para movimentação {id_movimentacao}")
-                    return []
-                    
-            except Exception as e:
-                logger.warning(f"⚠️ Erro ao verificar anexos: {e}")
-                return []
+            
+            # 3. Buscar por links de rastreamento
+            links_rastreamento = session['driver'].find_elements(
+                By.XPATH, 
+                "//a[contains(@href, 'RastreamentoCorreios')]"
+            )
+            
+            for link in links_rastreamento:
+                href = link.get_attribute('href')
+                texto = link.text.strip()
+                if href and texto:
+                    anexos.append({
+                        'url': href,
+                        'nome': texto,
+                        'tipo': 'rastreamento'
+                    })
+            
+            # 4. Buscar por elementos com onclick que contêm IDs de anexos
+            elementos_onclick = session['driver'].find_elements(
+                By.XPATH, 
+                "//*[@onclick and contains(@onclick, 'Id_MovimentacaoArquivo')]"
+            )
+            
+            for elem in elementos_onclick:
+                onclick = elem.get_attribute('onclick')
+                texto = elem.text.strip()
+                if onclick and 'Id_MovimentacaoArquivo' in onclick:
+                    # Extrair ID do anexo do onclick
+                    import re
+                    match = re.search(r"Id_MovimentacaoArquivo=(\d+)", onclick)
+                    if match:
+                        anexo_id = match.group(1)
+                        anexos.append({
+                            'url': f"BuscaProcesso?PaginaAtual=6&Id_MovimentacaoArquivo={anexo_id}",
+                            'nome': texto or f'Anexo_{anexo_id}',
+                            'tipo': 'onclick_extraido'
+                        })
+            
+            # Remover duplicatas baseado na URL
+            anexos_unicos = []
+            urls_vistas = set()
+            for anexo in anexos:
+                if anexo['url'] not in urls_vistas:
+                    anexos_unicos.append(anexo)
+                    urls_vistas.add(anexo['url'])
+            
+            logger.info(f"✅ {len(anexos_unicos)} anexos encontrados na página de navegação")
+            return anexos_unicos
                 
         except Exception as e:
             logger.error(f"❌ Erro ao extrair anexos: {e}")

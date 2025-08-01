@@ -902,7 +902,7 @@ class ProjudiAPI:
         except Exception as e:
             logger.error(f"❌ Erro ao extrair movimentações: {e}")
             return []
-    
+
     def extrair_partes_envolvidas(self, session, processo_info):
         """Extrai as partes envolvidas de um processo - VERSÃO CORRIGIDA"""
         try:
@@ -1279,7 +1279,7 @@ class ProjudiAPI:
         except Exception as e:
             logger.error(f"❌ Erro ao solicitar acesso ao processo: {e}")
             return False
-    
+
     def _extrair_anexos_movimentacao(self, session, codigo_movimentacao):
         """Extrai anexos de uma movimentação específica (após acesso já solicitado)"""
         try:

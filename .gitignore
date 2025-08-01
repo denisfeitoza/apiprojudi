@@ -53,4 +53,17 @@ logs/
 # Temporary files
 temp/
 tmp/
-arquivos_existentes/ 
+arquivos_existentes/
+
+# HTML files (reference files)
+*.html
+
+# Backup files
+*_backup.py
+
+# Debug and test files
+debug_*.html
+pagina_*.html
+navegacao_*.html
+movimentacoes_*.json
+teste_*.py 

@@ -884,168 +884,25 @@ class ProjudiAPI:
             return False
     
     def extrair_movimentacoes(self, session, processo_info, limite_movimentacoes=None, extrair_anexos=False):
-        """Extrai as movimentações de um processo - VERSÃO OTIMIZADA"""
+        """Extrai as movimentações de um processo - NOVA VERSÃO COM NAVEGAÇÃO DE ARQUIVOS"""
         try:
-            logger.info("📋 Extraindo movimentações...")
+            logger.info("📋 Extraindo movimentações da página de navegação de arquivos...")
             
-            # Aguardar carregamento da página com timeout otimizado
-            tabela_encontrada = False
-            seletores_tabela = [
-                (By.ID, "TabelaArquivos"),  # Tabela principal de movimentações
-                (By.ID, "Tabela"),  # Fallback para tabela genérica
-                (By.CLASS_NAME, "Tabela"),
-                (By.XPATH, "//table[contains(@class, 'Tabela')]"),
-                (By.XPATH, "//table[contains(@id, 'Tabela')]"),
-                (By.XPATH, "//table")
-            ]
+            # Usar o novo método de navegação de arquivos
+            movimentacoes = self.extrair_movimentacoes_navegacao_arquivos(
+                session=session,
+                processo_info=processo_info,
+                limite_movimentacoes=limite_movimentacoes,
+                extrair_anexos=extrair_anexos
+            )
             
-            # Aguardamento inteligente com retry
-            max_retries = 3
-            for tentativa in range(max_retries):
-                try:
-                    for seletor in seletores_tabela:
-                        try:
-                            # Aguardar elemento com timeout reduzido
-                            WebDriverWait(session['driver'], 10).until(EC.presence_of_element_located(seletor))
-                            logger.info(f"✅ Tabela de movimentações encontrada com seletor: {seletor}")
-                            tabela_encontrada = True
-                            break
-                        except:
-                            continue
-                    
-                    if tabela_encontrada:
-                        break
-                    else:
-                        # Se não encontrou, aguardar um pouco e tentar novamente
-                        if tentativa < max_retries - 1:
-                            logger.info(f"🔄 Tentativa {tentativa + 1}/{max_retries} - Aguardando carregamento...")
-                            time.sleep(2)
-                        else:
-                            logger.warning("⚠️ Tabela de movimentações não encontrada após todas as tentativas")
-                            return []
-                            
-                except Exception as e:
-                    if tentativa < max_retries - 1:
-                        logger.warning(f"⚠️ Erro na tentativa {tentativa + 1}: {e}")
-                        time.sleep(2)
-                    else:
-                        logger.error(f"❌ Erro ao aguardar tabela: {e}")
-                        return []
-            
-            # Aguardar um pouco mais para garantir que a tabela está completamente carregada
-            time.sleep(1)
-            
-            # Extrair dados da tabela
-            soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
-            
-            # Tentar encontrar a tabela de movimentações com seletores otimizados
-            tabela = None
-            seletores_bs4 = [
-                ('table', {'id': 'TabelaArquivos'}),
-                ('table', {'id': 'Tabela'}),
-                ('table', {'class': 'Tabela'}),
-                ('table', {})
-            ]
-            
-            for tag, attrs in seletores_bs4:
-                tabela = soup.find(tag, attrs)
-                if tabela:
-                    logger.info(f"✅ Tabela encontrada via BeautifulSoup: {tag} {attrs}")
-                    break
-            
-            if not tabela:
-                logger.warning("❌ Tabela de movimentações não encontrada!")
-                return []
-            
-            movimentacoes = []
-            linhas = tabela.find_all('tr', class_=re.compile(r'TabelaLinha|filtro-entrada'))
-            
-            # Se não encontrar linhas com classe específica, tentar todas as linhas
-            if not linhas:
-                linhas = tabela.find_all('tr')
-                logger.info(f"ℹ️ Usando todas as {len(linhas)} linhas da tabela")
-            
-            # Limitar número de movimentações se especificado
-            if limite_movimentacoes:
-                if isinstance(limite_movimentacoes, str) and limite_movimentacoes == 'ultimas3':
-                    linhas = linhas[:3]
-                elif isinstance(limite_movimentacoes, int):
-                    linhas = linhas[:limite_movimentacoes]
-            
-            for linha in linhas:
-                tds = linha.find_all('td')
-                if len(tds) >= 2:  # Reduzir para 2 colunas mínimas
-                    # Tentar diferentes padrões de colunas
-                    if len(tds) >= 4:
-                        # Padrão: Data | Movimentação | Usuário | ...
-                        data = tds[0].get_text(strip=True)
-                        tipo = tds[1].get_text(strip=True)
-                        usuario = tds[2].get_text(strip=True) if len(tds) > 2 else ""
-                        info_adicional = tds[3].get_text(strip=True) if len(tds) > 3 else ""
-                    elif len(tds) >= 2:
-                        # Padrão: Movimentação | Data
-                        tipo = tds[0].get_text(strip=True)
-                        data = tds[1].get_text(strip=True)
-                        usuario = ""
-                        info_adicional = ""
-                    else:
-                        continue
-                    
-                    # Verificar se tem anexo
-                    tem_anexo = bool(linha.find('img', {'src': 'imagens/22x22/go-bottom.png'}))
-                    
-                    # Extrair código da movimentação
-                    codigo_movimentacao = ""
-                    btn_anexo = linha.find('img', {'src': 'imagens/22x22/go-bottom.png'})
-                    if btn_anexo:
-                        onclick = btn_anexo.get('onclick', '')
-                        # Tentar diferentes padrões
-                        match = re.search(r"buscarArquivosMovimentacaoJSON\('([^']+)'", onclick)
-                        if match:
-                            codigo_movimentacao = match.group(1)
-                        else:
-                            match = re.search(r"Id_MovimentacaoArquivo',\s*'([^']+)'", onclick)
-                            if match:
-                                codigo_movimentacao = match.group(1)
-                    
-                    # Se não encontrou pelo onclick, tentar pelo id_movi no HTML
-                    if not codigo_movimentacao:
-                        id_movi_match = re.search(r'id_movi="([^"]+)"', str(linha))
-                        if id_movi_match:
-                            codigo_movimentacao = id_movi_match.group(1)
-                    
-                    # Verificar se é uma linha válida de movimentação
-                    if tipo and data and not tipo.startswith('Data') and not tipo.startswith('Movimentação'):
-                        movimentacao = {
-                            'numero': len(movimentacoes) + 1,
-                            'tipo': tipo,
-                            'data': data,
-                            'usuario': usuario,
-                            'tem_anexo': tem_anexo,
-                            'codigo_movimentacao': codigo_movimentacao,
-                            'anexos': [],
-                            'html_completo': str(linha),
-                            'info_adicional': info_adicional,
-                            'onclick': ""
-                        }
-                        
-                        # Extrair anexos se solicitado
-                        if extrair_anexos and tem_anexo:
-                            try:
-                                anexos = self._extrair_anexos_movimentacao(session, codigo_movimentacao)
-                                movimentacao['anexos'] = anexos
-                            except Exception as e:
-                                logger.warning(f"⚠️ Erro ao extrair anexos: {e}")
-                        
-                        movimentacoes.append(movimentacao)
-            
-            logger.info(f"✅ {len(movimentacoes)} movimentações extraídas")
+            logger.info(f"✅ {len(movimentacoes)} movimentações extraídas da página de navegação")
             return movimentacoes
             
         except Exception as e:
             logger.error(f"❌ Erro ao extrair movimentações: {e}")
             return []
-
+    
     def extrair_partes_envolvidas(self, session, processo_info):
         """Extrai as partes envolvidas de um processo - VERSÃO CORRIGIDA"""
         try:
@@ -1422,7 +1279,7 @@ class ProjudiAPI:
         except Exception as e:
             logger.error(f"❌ Erro ao solicitar acesso ao processo: {e}")
             return False
-
+    
     def _extrair_anexos_movimentacao(self, session, codigo_movimentacao):
         """Extrai anexos de uma movimentação específica (após acesso já solicitado)"""
         try:
@@ -1738,3 +1595,578 @@ class ProjudiAPI:
                     time.sleep(3)  # Aguardar mais tempo entre tentativas
                 else:
                     return {"error": f"Erro após {max_retries} tentativas: {str(e)}", "request_id": request_id} 
+    
+    def baixar_paginas_navegacao_arquivo(self, numero_processo, extrair_anexos=True):
+        """
+        Método seguro para baixar páginas de navegação de arquivos
+        Fluxo: Login -> Busca -> Acessar processo -> Solicitar acesso -> Baixar páginas
+        """
+        try:
+            logger.info(f"🔍 Iniciando download das páginas de navegação para processo: {numero_processo}")
+            
+            # Obter sessão do pool
+            session = self._get_session_with_health_check()
+            if not session:
+                logger.error("❌ Não foi possível obter sessão")
+                return {"error": "Não foi possível obter sessão"}
+            
+            try:
+                # 1. Fazer login
+                logger.info("🔐 Fazendo login...")
+                if not self._robust_operation(session, self.fazer_login, "Login", None, None, None):
+                    logger.error("❌ Falha no login")
+                    return {"error": "Falha no login"}
+                
+                # 2. Buscar processo
+                logger.info(f"🔍 Buscando processo: {numero_processo}")
+                if not self._robust_operation(session, self.buscar_por_processo, "Busca por Processo", numero_processo):
+                    logger.error("❌ Falha na busca do processo")
+                    return {"error": "Falha na busca do processo"}
+                
+                # 3. Aguardar carregamento da página do processo
+                time.sleep(3)
+                
+                # 4. Salvar página principal do processo
+                logger.info("💾 Salvando página principal do processo...")
+                html_pagina_principal = session['driver'].page_source
+                
+                # Salvar arquivo da página principal
+                nome_arquivo_principal = f"pagina_principal_processo_{numero_processo.replace('/', '_').replace('.', '_')}.html"
+                with open(nome_arquivo_principal, 'w', encoding='utf-8') as f:
+                    f.write(html_pagina_principal)
+                logger.info(f"✅ Página principal salva: {nome_arquivo_principal}")
+                
+                # 5. Se extrair_anexos=True, solicitar acesso
+                if extrair_anexos:
+                    logger.info("🔓 Solicitando acesso aos anexos...")
+                    self._solicitar_acesso_processo_seguro(session)
+                
+                # 6. Procurar e clicar no botão "Navegação de Arquivos"
+                logger.info("🔍 Procurando botão 'Navegação de Arquivos'...")
+                botao_encontrado = False
+                
+                # Seletores para o botão de navegação de arquivos
+                seletores_navegacao = [
+                    (By.XPATH, "//a[contains(text(), 'Navegação de Arquivo')]"),  # Correto - singular
+                    (By.XPATH, "//span[contains(text(), 'Navegação de Arquivo')]"),
+                    (By.XPATH, "//a[contains(@onclick, 'window.open') and contains(@onclick, 'BuscaProcesso')]"),
+                    (By.XPATH, "//a[@id='ui-id-3']"),  # ID específico do botão
+                    (By.XPATH, "//a[contains(text(), 'Navegação de Arquivos')]"),  # Fallback plural
+                    (By.XPATH, "//a[contains(text(), 'Navegação') and contains(text(), 'Arquivo')]"),
+                    (By.XPATH, "//a[contains(@onclick, 'navegacao')]"),
+                    (By.XPATH, "//a[contains(@href, 'navegacao')]"),
+                    (By.XPATH, "//button[contains(text(), 'Navegação de Arquivo')]"),
+                    (By.XPATH, "//input[@value='Navegação de Arquivo']"),
+                    (By.XPATH, "//a[contains(text(), 'Arquivos do Processo')]"),
+                    (By.XPATH, "//a[contains(text(), 'Navegação')]"),
+                ]
+                
+                for seletor in seletores_navegacao:
+                    try:
+                        elementos = session['driver'].find_elements(*seletor)
+                        if elementos:
+                            botao_navegacao = elementos[0]
+                            logger.info(f"✅ Botão encontrado com seletor: {seletor}")
+                            
+                            # Scroll para o botão
+                            session['driver'].execute_script("arguments[0].scrollIntoView(true);", botao_navegacao)
+                            time.sleep(1)
+                            
+                            # Clicar no botão
+                            botao_navegacao.click()
+                            time.sleep(3)
+                            botao_encontrado = True
+                            logger.info("✅ Botão 'Navegação de Arquivos' clicado")
+                            break
+                    except Exception as e:
+                        logger.debug(f"⚠️ Seletor {seletor} falhou: {e}")
+                        continue
+                
+                if not botao_encontrado:
+                    logger.warning("⚠️ Botão 'Navegação de Arquivos' não encontrado")
+                    # Salvar página principal mesmo assim
+                    return {
+                        "status": "partial_success",
+                        "pagina_principal": nome_arquivo_principal,
+                        "navegacao_arquivos": None,
+                        "mensagem": "Botão de navegação não encontrado"
+                    }
+                
+                # 7. Tratar popup/nova aba
+                logger.info("🔄 Tratando popup/nova aba...")
+                handles_originais = session['driver'].window_handles
+                
+                # Aguardar nova aba/popup
+                time.sleep(2)
+                handles_atuais = session['driver'].window_handles
+                
+                if len(handles_atuais) > len(handles_originais):
+                    # Nova aba foi aberta
+                    logger.info("📑 Nova aba detectada, mudando para ela...")
+                    nova_aba = handles_atuais[-1]
+                    session['driver'].switch_to.window(nova_aba)
+                    time.sleep(3)
+                else:
+                    # Pode ser um popup ou mudança na mesma aba
+                    logger.info("ℹ️ Nenhuma nova aba detectada, continuando na mesma...")
+                
+                # 8. Salvar página de navegação de arquivos
+                logger.info("💾 Salvando página de navegação de arquivos...")
+                html_navegacao = session['driver'].page_source
+                
+                nome_arquivo_navegacao = f"navegacao_arquivos_processo_{numero_processo.replace('/', '_').replace('.', '_')}.html"
+                with open(nome_arquivo_navegacao, 'w', encoding='utf-8') as f:
+                    f.write(html_navegacao)
+                logger.info(f"✅ Página de navegação salva: {nome_arquivo_navegacao}")
+                
+                # 9. Fechar popup/nova aba se necessário
+                try:
+                    if len(session['driver'].window_handles) > 1:
+                        logger.info("🔒 Fechando nova aba...")
+                        session['driver'].close()
+                        session['driver'].switch_to.window(handles_originais[0])
+                        time.sleep(1)
+                except Exception as e:
+                    logger.info(f"ℹ️ Erro ao fechar aba (normal): {e}")
+                    # Tentar voltar para a aba original
+                    try:
+                        session['driver'].switch_to.window(handles_originais[0])
+                    except:
+                        pass
+                
+                # 10. Verificar se há popup de confirmação na página principal
+                try:
+                    alert = session['driver'].switch_to.alert
+                    alert.accept()
+                    logger.info("✅ Popup de confirmação aceito")
+                    session['driver'].switch_to.default_content()
+                except:
+                    logger.info("ℹ️ Nenhum popup de confirmação encontrado")
+                
+                logger.info("🎉 Download das páginas concluído com sucesso!")
+                
+                return {
+                    "status": "success",
+                    "pagina_principal": nome_arquivo_principal,
+                    "navegacao_arquivos": nome_arquivo_navegacao,
+                    "processo": numero_processo,
+                    "extrair_anexos": extrair_anexos
+                }
+                
+            finally:
+                # Liberar sessão
+                self.session_pool.release_session(session)
+                
+        except Exception as e:
+            logger.error(f"❌ Erro no download das páginas: {e}")
+            return {"error": f"Erro: {str(e)}"}
+    
+    def _solicitar_acesso_processo_seguro(self, session):
+        """Solicita acesso aos anexos de forma segura com JavaScript"""
+        try:
+            logger.info("🔓 Solicitando acesso aos anexos com JavaScript...")
+            
+            # Aguardar carregamento da página
+            time.sleep(2)
+            
+            # Tentar encontrar o menu "Outras" com JavaScript
+            scripts_menu = [
+                """
+                var menuOutras = document.querySelector('a[href*="outras"]');
+                if (menuOutras) {
+                    menuOutras.click();
+                    return true;
+                }
+                return false;
+                """,
+                """
+                var menuOutras = document.querySelector('a:contains("Outras")');
+                if (menuOutras) {
+                    menuOutras.click();
+                    return true;
+                }
+                return false;
+                """,
+                """
+                var links = document.querySelectorAll('a');
+                for (var i = 0; i < links.length; i++) {
+                    if (links[i].textContent.includes('Outras')) {
+                        links[i].click();
+                        return true;
+                    }
+                }
+                return false;
+                """,
+                """
+                var menuOutras = document.getElementById('menu_outras');
+                if (menuOutras) {
+                    menuOutras.click();
+                    return true;
+                }
+                return false;
+                """
+            ]
+            
+            menu_clicado = False
+            for i, script in enumerate(scripts_menu):
+                try:
+                    resultado = session['driver'].execute_script(script)
+                    if resultado:
+                        logger.info(f"✅ Menu 'Outras' clicado com script {i+1}")
+                        menu_clicado = True
+                        time.sleep(1)
+                        break
+                except Exception as e:
+                    logger.debug(f"⚠️ Script {i+1} falhou: {e}")
+                    continue
+            
+            if not menu_clicado:
+                logger.warning("⚠️ Menu 'Outras' não encontrado")
+                return False
+            
+            # Tentar clicar em "Solicitar Acesso" com JavaScript
+            scripts_solicitar = [
+                """
+                var linkSolicitar = document.querySelector('a[href*="solicitar"]');
+                if (linkSolicitar) {
+                    linkSolicitar.click();
+                    return true;
+                }
+                return false;
+                """,
+                """
+                var links = document.querySelectorAll('a');
+                for (var i = 0; i < links.length; i++) {
+                    if (links[i].textContent.includes('Solicitar Acesso')) {
+                        links[i].click();
+                        return true;
+                    }
+                }
+                return false;
+                """,
+                """
+                var linkSolicitar = document.querySelector('a:contains("Solicitar Acesso")');
+                if (linkSolicitar) {
+                    linkSolicitar.click();
+                    return true;
+                }
+                return false;
+                """,
+                """
+                var elementos = document.querySelectorAll('*');
+                for (var i = 0; i < elementos.length; i++) {
+                    if (elementos[i].textContent && elementos[i].textContent.includes('Solicitar Acesso')) {
+                        if (elementos[i].tagName === 'A' || elementos[i].onclick) {
+                            elementos[i].click();
+                            return true;
+                        }
+                    }
+                }
+                return false;
+                """
+            ]
+            
+            acesso_solicitado = False
+            for i, script in enumerate(scripts_solicitar):
+                try:
+                    resultado = session['driver'].execute_script(script)
+                    if resultado:
+                        logger.info(f"✅ 'Solicitar Acesso' clicado com script {i+1}")
+                        acesso_solicitado = True
+                        time.sleep(2)
+                        break
+                except Exception as e:
+                    logger.debug(f"⚠️ Script solicitar {i+1} falhou: {e}")
+                    continue
+            
+            if not acesso_solicitado:
+                logger.warning("⚠️ 'Solicitar Acesso' não encontrado")
+                return False
+            
+            # Tratar possíveis popups
+            try:
+                alert = session['driver'].switch_to.alert
+                alert.accept()
+                logger.info("✅ Popup de confirmação aceito")
+                session['driver'].switch_to.default_content()
+            except:
+                logger.info("ℹ️ Nenhum popup de confirmação encontrado")
+            
+            # Aguardar processamento
+            time.sleep(3)
+            logger.info("✅ Acesso aos anexos solicitado com sucesso")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao solicitar acesso: {e}")
+            return False
+    
+    def extrair_movimentacoes_navegacao_arquivos(self, session, processo_info, limite_movimentacoes=None, extrair_anexos=False):
+        """
+        Extrai movimentações da página de navegação de arquivos (mais eficiente)
+        Esta página tem as movimentações em ordem crescente (1, 2, 3...) e acesso direto aos anexos
+        """
+        try:
+            logger.info("📋 Extraindo movimentações da página de navegação de arquivos...")
+            
+            # 1. Primeiro, acessar a página de navegação de arquivos
+            if not self._acessar_pagina_navegacao_arquivos(session):
+                logger.error("❌ Falha ao acessar página de navegação de arquivos")
+                return []
+            
+            # 2. Aguardar carregamento da tabela
+            time.sleep(3)
+            
+            # 3. Extrair dados da tabela de movimentações
+            soup = BeautifulSoup(session['driver'].page_source, 'html.parser')
+            tabela = soup.find('table', {'id': 'TabelaArquivos'})
+            
+            if not tabela:
+                logger.error("❌ Tabela de movimentações não encontrada na página de navegação")
+                return []
+            
+            movimentacoes = []
+            linhas = tabela.find_all('tr', class_=re.compile(r'TabelaLinha|filtro-entrada'))
+            
+            # Se não encontrar linhas com classe específica, tentar todas as linhas
+            if not linhas:
+                linhas = tabela.find_all('tr')
+                logger.info(f"ℹ️ Usando todas as {len(linhas)} linhas da tabela")
+            
+            # Limitar número de movimentações se especificado
+            if limite_movimentacoes:
+                if isinstance(limite_movimentacoes, str) and limite_movimentacoes == 'ultimas3':
+                    linhas = linhas[:3]
+                elif isinstance(limite_movimentacoes, int):
+                    linhas = linhas[:limite_movimentacoes]
+            
+            for linha in linhas:
+                tds = linha.find_all('td')
+                if len(tds) >= 5:  # A tabela tem 6 colunas: Nº, Movimentação, Data, Usuário, Arquivo(s), Opções
+                    # Extrair dados das colunas
+                    numero = tds[0].get_text(strip=True)
+                    movimentacao_celula = tds[1]
+                    data = tds[2].get_text(strip=True)
+                    usuario = tds[3].get_text(strip=True)
+                    arquivos_celula = tds[4]
+                    
+                    # Extrair tipo e descrição da movimentação
+                    tipo_movimentacao = ""
+                    descricao_movimentacao = ""
+                    
+                    span_tipo = movimentacao_celula.find('span', class_='filtro_tipo_movimentacao')
+                    if span_tipo:
+                        tipo_movimentacao = span_tipo.get_text(strip=True)
+                        # Pegar o texto após o <br> para a descrição
+                        br_element = movimentacao_celula.find('br')
+                        if br_element and br_element.next_sibling:
+                            descricao_movimentacao = br_element.next_sibling.strip()
+                        else:
+                            # Se não há <br>, pegar todo o texto exceto o tipo
+                            texto_completo = movimentacao_celula.get_text(strip=True)
+                            descricao_movimentacao = texto_completo.replace(tipo_movimentacao, '').strip()
+                    else:
+                        # Se não há span, pegar todo o texto
+                        tipo_movimentacao = movimentacao_celula.get_text(strip=True)
+                    
+                    # Verificar se tem anexo
+                    tem_anexo = bool(arquivos_celula.find('img', {'src': 'imagens/22x22/go-bottom.png'}))
+                    
+                    # Extrair código da movimentação para anexos
+                    codigo_movimentacao = ""
+                    link_anexo = arquivos_celula.find('a')
+                    if link_anexo:
+                        onclick = link_anexo.get('onclick', '')
+                        match = re.search(r"buscarArquivosMovimentacaoJSON\('([^']+)'", onclick)
+                        if match:
+                            codigo_movimentacao = match.group(1)
+                            logger.debug(f"📎 Código de anexo encontrado: {codigo_movimentacao}")
+                    
+                    # Extrair ID da movimentação
+                    id_movimentacao = ""
+                    div_drop = linha.find('div', class_='dropMovimentacao')
+                    if div_drop:
+                        id_movimentacao = div_drop.get('id_movi', '')
+                    
+                    # Verificar se é uma linha válida de movimentação
+                    if numero and tipo_movimentacao and not numero.startswith('Nº') and not numero.startswith('Número'):
+                        movimentacao = {
+                            'numero': int(numero) if numero.isdigit() else len(movimentacoes) + 1,
+                            'tipo': tipo_movimentacao,
+                            'descricao': descricao_movimentacao,
+                            'data': data,
+                            'usuario': usuario,
+                            'tem_anexo': tem_anexo,
+                            'codigo_movimentacao': codigo_movimentacao,
+                            'id_movimentacao': id_movimentacao,
+                            'anexos': [],
+                            'html_completo': str(linha)
+                        }
+                        
+                        # Extrair anexos se solicitado
+                        if extrair_anexos and tem_anexo and id_movimentacao:
+                            try:
+                                anexos = self._extrair_anexos_movimentacao_navegacao(session, id_movimentacao)
+                                movimentacao['anexos'] = anexos
+                            except Exception as e:
+                                logger.warning(f"⚠️ Erro ao extrair anexos: {e}")
+                        
+                        movimentacoes.append(movimentacao)
+            
+            # Ordenar por número (já estão em ordem crescente, mas garantir)
+            movimentacoes.sort(key=lambda x: x['numero'])
+            
+            logger.info(f"✅ {len(movimentacoes)} movimentações extraídas da página de navegação")
+            return movimentacoes
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao extrair movimentações da navegação: {e}")
+            return []
+    
+    def _acessar_pagina_navegacao_arquivos(self, session):
+        """Acessa a página de navegação de arquivos do processo"""
+        try:
+            logger.info("🔍 Acessando página de navegação de arquivos...")
+            
+            # 1. PRIMEIRO: Solicitar acesso aos anexos antes de acessar a página de navegação
+            logger.info("🔓 Solicitando acesso aos anexos antes de acessar navegação...")
+            self._solicitar_acesso_processo_seguro(session)
+            
+            # 2. Procurar e clicar no botão "Navegação de Arquivo"
+            seletores_navegacao = [
+                (By.XPATH, "//a[contains(text(), 'Navegação de Arquivo')]"),
+                (By.XPATH, "//span[contains(text(), 'Navegação de Arquivo')]"),
+                (By.XPATH, "//a[contains(@onclick, 'window.open') and contains(@onclick, 'BuscaProcesso')]"),
+                (By.XPATH, "//a[@id='ui-id-3']"),
+            ]
+            
+            botao_encontrado = False
+            for seletor in seletores_navegacao:
+                try:
+                    elementos = session['driver'].find_elements(*seletor)
+                    if elementos:
+                        botao_navegacao = elementos[0]
+                        logger.info(f"✅ Botão encontrado com seletor: {seletor}")
+                        
+                        # Scroll para o botão
+                        session['driver'].execute_script("arguments[0].scrollIntoView(true);", botao_navegacao)
+                        time.sleep(1)
+                        
+                        # Clicar no botão
+                        botao_navegacao.click()
+                        time.sleep(3)
+                        botao_encontrado = True
+                        logger.info("✅ Botão 'Navegação de Arquivo' clicado")
+                        break
+                except Exception as e:
+                    logger.debug(f"⚠️ Seletor {seletor} falhou: {e}")
+                    continue
+            
+            if not botao_encontrado:
+                logger.error("❌ Botão 'Navegação de Arquivo' não encontrado")
+                return False
+            
+            # 3. Tratar popup/nova aba
+            handles_originais = session['driver'].window_handles
+            time.sleep(2)
+            handles_atuais = session['driver'].window_handles
+            
+            if len(handles_atuais) > len(handles_originais):
+                # Nova aba foi aberta
+                logger.info("📑 Nova aba detectada, mudando para ela...")
+                nova_aba = handles_atuais[-1]
+                session['driver'].switch_to.window(nova_aba)
+                time.sleep(3)
+            else:
+                # Pode ser um popup ou mudança na mesma aba
+                logger.info("ℹ️ Nenhuma nova aba detectada, continuando na mesma...")
+            
+            # 4. Aguardar carregamento da página
+            time.sleep(3)
+            
+            # 5. Verificar se chegou na página correta
+            if "TabelaArquivos" in session['driver'].page_source:
+                logger.info("✅ Página de navegação de arquivos carregada com sucesso")
+                return True
+            else:
+                logger.error("❌ Página de navegação não carregou corretamente")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao acessar página de navegação: {e}")
+            return False
+    
+    def _extrair_anexos_movimentacao_navegacao(self, session, id_movimentacao):
+        """Extrai anexos de uma movimentação específica na página de navegação usando o ID"""
+        try:
+            logger.info(f"📎 Verificando anexos para movimentação ID: {id_movimentacao}")
+            
+            # Clicar no botão de anexos da movimentação usando o ID
+            try:
+                # Usar o ID da movimentação para encontrar o botão
+                btn_anexo = session['driver'].find_element(
+                    By.ID, 
+                    f"MostrarArquivos_{id_movimentacao}"
+                )
+                
+                # Tentar fechar overlay se existir
+                try:
+                    overlay = session['driver'].find_element(By.CLASS_NAME, "ui-widget-overlay")
+                    if overlay.is_displayed():
+                        session['driver'].execute_script("arguments[0].style.display = 'none';", overlay)
+                        time.sleep(1)
+                        logger.info("✅ Overlay fechado")
+                except:
+                    pass
+                
+                # Scroll para o botão
+                session['driver'].execute_script("arguments[0].scrollIntoView(true);", btn_anexo)
+                time.sleep(1)
+                
+                # Tentar clicar com JavaScript se o clique normal falhar
+                try:
+                    btn_anexo.click()
+                except:
+                    session['driver'].execute_script("arguments[0].click();", btn_anexo)
+                
+                time.sleep(2)
+                logger.info(f"✅ Botão de anexos clicado para movimentação ID: {id_movimentacao}")
+            except Exception as e:
+                logger.warning(f"⚠️ Não foi possível clicar no botão de anexos: {e}")
+                return []
+            
+            # Aguardar carregamento dos anexos
+            time.sleep(3)
+            
+            # Verificar se há anexos disponíveis
+            try:
+                # Tentar encontrar links de anexos
+                links_anexos = session['driver'].find_elements(
+                    By.XPATH, 
+                    "//a[contains(@href, 'DownloadArquivo') or contains(@href, 'VisualizarArquivo')]"
+                )
+                
+                if links_anexos:
+                    anexos = []
+                    for link in links_anexos:
+                        href = link.get_attribute('href')
+                        texto = link.get_text(strip=True)
+                        anexos.append({
+                            'url': href,
+                            'nome': texto or 'Anexo',
+                            'tipo': 'download'
+                        })
+                    
+                    logger.info(f"✅ {len(anexos)} anexos encontrados para movimentação {id_movimentacao}")
+                    return anexos
+                else:
+                    logger.info(f"ℹ️ Nenhum anexo encontrado para movimentação {id_movimentacao}")
+                    return []
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ Erro ao verificar anexos: {e}")
+                return []
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao extrair anexos: {e}")
+            return []

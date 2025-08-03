@@ -1,0 +1,56 @@
+# Arquivos Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Cache e temporários
+.pytest_cache/
+.coverage
+.cache/
+
+# Logs e resultados de teste
+logs/test_*.log
+logs/teste_*.log
+resultado_*.json
+debug_*.png
+*.png
+paginas_*/
+analise_*/
+resultados_teste/
+
+# Arquivos temporários e downloads
+temp/
+downloads/
+*.tmp
+*.temp
+
+# Arquivos de teste e debug
+test_*.py
+teste_*.py
+debug_*.py
+mapear_*.py
+executar_*.py
+baixar_*.py
+run_*.sh
+README_TESTES.md
+
+# Ambiente virtual
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dados sensíveis
+*.key
+*.pem
+credentials.json

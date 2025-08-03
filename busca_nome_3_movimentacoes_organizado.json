@@ -1,0 +1,835 @@
+{
+  "informacoes_gerais": {
+    "status": "success",
+    "tipo_busca": "nome",
+    "nome_pesquisado": "Rosane Aparecida Carlos Marques",
+    "timestamp": "2025-08-03T18:02:55.976209",
+    "tempo_execucao_segundos": 63.01562976837158
+  },
+  "resumo_estatisticas": {
+    "total_processos_encontrados": 7,
+    "total_processos_detalhados": 7,
+    "total_movimentacoes": 21,
+    "total_movimentacoes_com_anexo": 12,
+    "total_partes_envolvidas": 34,
+    "limite_movimentacoes_por_processo": 3
+  },
+  "processos": [
+    {
+      "indice": 1,
+      "identificacao": {
+        "numero": "5387135-4",
+        "classe": "Rosane Aparecida Carlos Marques vs Abadia Campos Amaral",
+        "assunto": "Distribuído em 21/06/2023 00:00:00",
+        "situacao": "",
+        "valor_causa": "265.890,28",
+        "orgao_julgador": ""
+      },
+      "datas": {
+        "data_autuacao": "",
+        "data_distribuicao": ""
+      },
+      "movimentacoes": {
+        "total_extraidas": 3,
+        "limite_aplicado": 3,
+        "com_anexo": 1,
+        "detalhes": [
+          {
+            "numero": 765,
+            "tipo": "Autos Conclusos",
+            "descricao": "P/ DECISÃO",
+            "data": "02/04/2025",
+            "usuario": "Ludmila Soares Paiva",
+            "tem_anexo": false
+          },
+          {
+            "numero": 764,
+            "tipo": "Intimação Lida",
+            "descricao": "Automaticamente para (Polo Passivo)Estado De Goias (Referente à Mov. Despacho -> Mero Expediente (17/03/2025 16:15:26))",
+            "data": "27/03/2025",
+            "usuario": "SISTEMA PROJUDI",
+            "tem_anexo": false
+          },
+          {
+            "numero": 763,
+            "tipo": "Juntada -> Petição",
+            "descricao": "",
+            "data": "25/03/2025",
+            "usuario": "PEDRO LUSTOSA DO AMARAL HIDASI",
+            "tem_anexo": true
+          }
+        ]
+      },
+      "partes_envolvidas": {
+        "total": 8,
+        "polo_ativo": {
+          "quantidade": 6,
+          "detalhes": [
+            {
+              "nome": "Abadia Campos Amaral",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "RUA 1201 nº 0 LT. U68 QD. 16",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Ana Cristina Borges Reayck",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "RUA 1201 nº 0 LT. U68 QD. 16",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Jeronima Borges De Jesus Reayck",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "RUA 1201 nº 0 LT. U68 QD. 16",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Ana Francisca De Matos",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "RUA 1201 nº 0 LT. U68 QD. 16",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Ana Maria Oliveira Silva Campos",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "RUA 1201 nº 0 LT. U68 QD. 16",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Ana Paula Alves Da Costa",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "RUA 1201 nº 0 LT. U68 QD. 16",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "polo_passivo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Dt. Nascimento",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "Praça Dr. Pedro Ludovico Teixeira nº 26 PRACA CIVICA",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "outras_partes": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Gratuidade da Justiça",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        }
+      },
+      "anexos": {
+        "total": 0,
+        "detalhes": []
+      }
+    },
+    {
+      "indice": 2,
+      "identificacao": {
+        "numero": "5838566-12",
+        "classe": "Rosane Aparecida Carlos Marques Paiva vs Aymore Credito Financiamento E Investimento Sa",
+        "assunto": "Distribuído em 13/12/2023 00:00:00",
+        "situacao": "",
+        "valor_causa": "147.567,38",
+        "orgao_julgador": ""
+      },
+      "datas": {
+        "data_autuacao": "",
+        "data_distribuicao": ""
+      },
+      "movimentacoes": {
+        "total_extraidas": 3,
+        "limite_aplicado": 3,
+        "com_anexo": 2,
+        "detalhes": [
+          {
+            "numero": 85,
+            "tipo": "Juntada -> Petição",
+            "descricao": "PENHORA ON LINE",
+            "data": "29/07/2025",
+            "usuario": "TACIO CONSTANTINO DOS SANTOS",
+            "tem_anexo": true
+          },
+          {
+            "numero": 84,
+            "tipo": "Juntada -> Petição",
+            "descricao": "Juntada -> Petição",
+            "data": "28/07/2025",
+            "usuario": "JOSÉ CARLOS SKRZYSZOWSKI JUNIOR",
+            "tem_anexo": true
+          },
+          {
+            "numero": 83,
+            "tipo": "Intimação Efetivada",
+            "descricao": "Disponibilizada no primeiro e publicada no segundo dia útil (Lei 11.419/2006, art. 4º, §§ 3º e 4º) - Adv(s). de Aymore Credito Financiamento E Investimento Sa (Referente à Mov. Despacho -> Expedição de alvará de levantamento (09/07/2025 14:17:26))",
+            "data": "09/07/2025",
+            "usuario": "SISTEMA CNJ",
+            "tem_anexo": false
+          }
+        ]
+      },
+      "partes_envolvidas": {
+        "total": 6,
+        "polo_ativo": {
+          "quantidade": 2,
+          "detalhes": [
+            {
+              "nome": "Rosane Aparecida Carlos Marques Paiva",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "AVENIDA PERIMETRAL nº 354 0",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Maria Aparecida Marques",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "AVENIDA PERIMETRAL nº 354 0",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "polo_passivo": {
+          "quantidade": 3,
+          "detalhes": [
+            {
+              "nome": "Aymore Cfi",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "Rua Amador Bueno, n. 474, Bloco C, 1º Andar, Bairro Santo Amaro nº 474 Bloco C 1 andar",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Aymore Credito Financiamento E Investimento Sa",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "Rua Amador Bueno, n. 474, Bloco C, 1º Andar, Bairro Santo Amaro nº 474 Bloco C 1 andar",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Parte Citada",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "Rua Amador Bueno, n. 474, Bloco C, 1º Andar, Bairro Santo Amaro nº 474 Bloco C 1 andar",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "outras_partes": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Com Custas",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        }
+      },
+      "anexos": {
+        "total": 0,
+        "detalhes": []
+      }
+    },
+    {
+      "indice": 3,
+      "identificacao": {
+        "numero": "5095762-36",
+        "classe": "Rosane Aparecida Carlos Marques vs Banco Bradesco Financiamentos S/A",
+        "assunto": "Distribuído em 15/02/2024 00:00:00",
+        "situacao": "",
+        "valor_causa": "177.649,36",
+        "orgao_julgador": ""
+      },
+      "datas": {
+        "data_autuacao": "",
+        "data_distribuicao": ""
+      },
+      "movimentacoes": {
+        "total_extraidas": 3,
+        "limite_aplicado": 3,
+        "com_anexo": 0,
+        "detalhes": [
+          {
+            "numero": 82,
+            "tipo": "Intimação Efetivada",
+            "descricao": "Disponibilizada no primeiro e publicada no segundo dia útil (Lei 11.419/2006, art. 4º, §§ 3º e 4º) - Adv(s). de Banco Bradesco Financiamentos S/A (Referente à Mov. Intimação Efetivada (25/07/2025 13:06:27))",
+            "data": "25/07/2025",
+            "usuario": "SISTEMA CNJ",
+            "tem_anexo": false
+          },
+          {
+            "numero": 81,
+            "tipo": "Intimação Efetivada",
+            "descricao": "Disponibilizada no primeiro e publicada no segundo dia útil (Lei 11.419/2006, art. 4º, §§ 3º e 4º) - Adv(s). de Rosane Aparecida Carlos Marques (Referente à Mov. Decisão -> deferimento (23/07/2025 15:02:53))",
+            "data": "25/07/2025",
+            "usuario": "SISTEMA CNJ",
+            "tem_anexo": false
+          },
+          {
+            "numero": 80,
+            "tipo": "Intimação Efetivada",
+            "descricao": "Disponibilizada no primeiro e publicada no segundo dia útil (Lei 11.419/2006, art. 4º, §§ 3º e 4º) - Adv(s). de Banco Bradesco Financiamentos S/A (Referente à Mov. Decisão -> deferimento (23/07/2025 15:02:53))",
+            "data": "25/07/2025",
+            "usuario": "SISTEMA CNJ",
+            "tem_anexo": false
+          }
+        ]
+      },
+      "partes_envolvidas": {
+        "total": 3,
+        "polo_ativo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Banco Bradesco Financiamentos SA",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "Cidade de Deus nº 0 Prédio Prata - 4º andar",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "polo_passivo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Rosane Aparecida Carlos Marques",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "ESTRADA RURAL KM 04 – ANTIGA ESTRADA BELA VISTA. CHÁCARA MARABÁ, PRÓXIMO AO LAGO VERDE VALE - ZONA R nº 00 00",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "outras_partes": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Com Custas",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        }
+      },
+      "anexos": {
+        "total": 0,
+        "detalhes": []
+      }
+    },
+    {
+      "indice": 4,
+      "identificacao": {
+        "numero": "5213147-5",
+        "classe": "ROSANE APARECIDA CARLOS MARQUES PAIVA vs BANCO VOTORANTIM S.A",
+        "assunto": "Distribuído em 25/03/2024 00:00:00",
+        "situacao": "",
+        "valor_causa": "92.314,76",
+        "orgao_julgador": ""
+      },
+      "datas": {
+        "data_autuacao": "",
+        "data_distribuicao": ""
+      },
+      "movimentacoes": {
+        "total_extraidas": 3,
+        "limite_aplicado": 3,
+        "com_anexo": 3,
+        "detalhes": [
+          {
+            "numero": 77,
+            "tipo": "Certidão Expedida",
+            "descricao": "Certidão - Petição Verificada e Guia Vinculada e recolhida - Locomoção",
+            "data": "31/07/2025",
+            "usuario": "JOSÉ RANDER MOURA MEIRELES",
+            "tem_anexo": true
+          },
+          {
+            "numero": 76,
+            "tipo": "Juntada -> Petição",
+            "descricao": "",
+            "data": "30/07/2025",
+            "usuario": "SERGIO SCHULZE",
+            "tem_anexo": true
+          },
+          {
+            "numero": 75,
+            "tipo": "Intimação Expedida",
+            "descricao": "Para (Polo Ativo) BANCO VOTORANTIM S.A - Código de Rastreamento Correios:",
+            "data": "22/07/2025",
+            "usuario": "SISTEMA PROJUDI",
+            "tem_anexo": true
+          }
+        ]
+      },
+      "partes_envolvidas": {
+        "total": 3,
+        "polo_ativo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Dt. Nascimento",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "Avenida das Nações Unidas nº 14171 Torre A, 18º andar, conj. 82",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "polo_passivo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Dt. Nascimento",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "RUA MANOEL BANDEIRA nº 0 QD. 104, LT. 2",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "outras_partes": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Com Custas",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        }
+      },
+      "anexos": {
+        "total": 0,
+        "detalhes": []
+      }
+    },
+    {
+      "indice": 5,
+      "identificacao": {
+        "numero": "5853683-9",
+        "classe": "Rosane Aparecida Carlos Marques Paiva vs Banco Pan S/a",
+        "assunto": "Distribuído em 05/09/2024 00:00:00",
+        "situacao": "",
+        "valor_causa": "91.772,80",
+        "orgao_julgador": ""
+      },
+      "datas": {
+        "data_autuacao": "",
+        "data_distribuicao": ""
+      },
+      "movimentacoes": {
+        "total_extraidas": 3,
+        "limite_aplicado": 3,
+        "com_anexo": 3,
+        "detalhes": [
+          {
+            "numero": 43,
+            "tipo": "Juntada -> Petição",
+            "descricao": "Juntada -> Petição",
+            "data": "28/07/2025",
+            "usuario": "JOSÉ CARLOS SKRZYSZOWSKI JUNIOR",
+            "tem_anexo": true
+          },
+          {
+            "numero": 42,
+            "tipo": "Intimação Expedida",
+            "descricao": "Para (Polo Ativo) Banco Pan S/a - Código de Rastreamento Correios:",
+            "data": "17/07/2025",
+            "usuario": "SISTEMA PROJUDI",
+            "tem_anexo": true
+          },
+          {
+            "numero": 41,
+            "tipo": "Intimação Efetivada",
+            "descricao": "Disponibilizada no primeiro e publicada no segundo dia útil (Lei 11.419/2006, art. 4º, §§ 3º e 4º) - Adv(s). de Banco Pan S/a (Referente à Mov. Certidão Expedida (17/07/2025 13:28:33))",
+            "data": "17/07/2025",
+            "usuario": "SISTEMA CNJ",
+            "tem_anexo": true
+          }
+        ]
+      },
+      "partes_envolvidas": {
+        "total": 4,
+        "polo_ativo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Banco Pan Sa",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "AV. PAULISTA nº 1374 15 ANDAR",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "polo_passivo": {
+          "quantidade": 2,
+          "detalhes": [
+            {
+              "nome": "Rosane Aparecida Carlos Marques Paiva",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "RUA FN 40, JARDIM FONTE NOVA, GOIÂNIA - GO - CEP 74594049. nº 00",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Maria Aparecida Marques",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "RUA FN 40, JARDIM FONTE NOVA, GOIÂNIA - GO - CEP 74594049. nº 00",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "outras_partes": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Com Custas",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        }
+      },
+      "anexos": {
+        "total": 0,
+        "detalhes": []
+      }
+    },
+    {
+      "indice": 6,
+      "identificacao": {
+        "numero": "5454837-93",
+        "classe": "Rosane Aparecida Carlos Marques Paiva vs Estado De Goias",
+        "assunto": "Distribuído em 10/06/2025 00:00:00",
+        "situacao": "",
+        "valor_causa": "1.615,29",
+        "orgao_julgador": ""
+      },
+      "datas": {
+        "data_autuacao": "",
+        "data_distribuicao": ""
+      },
+      "movimentacoes": {
+        "total_extraidas": 3,
+        "limite_aplicado": 3,
+        "com_anexo": 2,
+        "detalhes": [
+          {
+            "numero": 30,
+            "tipo": "Ato Ordinatório",
+            "descricao": "Certidão - prioridade processual – idoso (60)",
+            "data": "30/07/2025",
+            "usuario": "Solange Maria de Alcântara Moreira",
+            "tem_anexo": true
+          },
+          {
+            "numero": 29,
+            "tipo": "Intimação Lida",
+            "descricao": "Automaticamente para (Polo Passivo)Estado De Goias (Referente à Mov. Julgamento -> Com Resolução do Mérito -> Homologação de Decisão de Juiz Leigo (14/07/2025 13:59:24))",
+            "data": "24/07/2025",
+            "usuario": "SISTEMA PROJUDI",
+            "tem_anexo": false
+          },
+          {
+            "numero": 28,
+            "tipo": "Juntada -> Petição",
+            "descricao": "Manifestação - Dados Bancários",
+            "data": "16/07/2025",
+            "usuario": "ERIVALDO BERNARDO DA SILVA",
+            "tem_anexo": true
+          }
+        ]
+      },
+      "partes_envolvidas": {
+        "total": 7,
+        "polo_ativo": {
+          "quantidade": 2,
+          "detalhes": [
+            {
+              "nome": "Rosane Aparecida Carlos Marques Paiva",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "MANOEL BANDEIRA nº S N QD 104 LT 02",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Maria Aparecida Marques",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "MANOEL BANDEIRA nº S N QD 104 LT 02",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "polo_passivo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Parte Citada",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "82 nº 400 ANDAR 8 PAL PEDRO LUDOVICO",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "outras_partes": {
+          "quantidade": 4,
+          "detalhes": [
+            {
+              "nome": "Outras Informações",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Fase Processual",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Segredo de Justiça",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            },
+            {
+              "nome": "Penhora no Rosto",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        }
+      },
+      "anexos": {
+        "total": 0,
+        "detalhes": []
+      }
+    },
+    {
+      "indice": 7,
+      "identificacao": {
+        "numero": "5605320-81",
+        "classe": "Rosane Aparecida Carlos Marques vs Banco Bradesco Financiamentos S/a",
+        "assunto": "Distribuído em 31/07/2025 10:42:14",
+        "situacao": "",
+        "valor_causa": "177.649,36",
+        "orgao_julgador": ""
+      },
+      "datas": {
+        "data_autuacao": "",
+        "data_distribuicao": ""
+      },
+      "movimentacoes": {
+        "total_extraidas": 3,
+        "limite_aplicado": 3,
+        "com_anexo": 1,
+        "detalhes": [
+          {
+            "numero": 10,
+            "tipo": "Mandado Expedido",
+            "descricao": "Para Guapó - Central de Mandados (Mandado nº 5524720 / Para: Rosane Aparecida Carlos Marques)",
+            "data": "01/08/2025",
+            "usuario": "Jhennifer Stephany Martins Mariano Gomes",
+            "tem_anexo": true
+          },
+          {
+            "numero": 9,
+            "tipo": "Intimação Efetivada",
+            "descricao": "Disponibilizada no primeiro e publicada no segundo dia útil (Lei 11.419/2006, art. 4º, §§ 3º e 4º) - Adv(s). de Banco Bradesco Financiamentos S/a (Referente à Mov. Decisão -> Outras Decisões (31/07/2025 14:58:04))",
+            "data": "31/07/2025",
+            "usuario": "SISTEMA CNJ",
+            "tem_anexo": false
+          },
+          {
+            "numero": 8,
+            "tipo": "Intimação Expedida",
+            "descricao": "Aguardando processamento de envio para o DJEN - Adv(s). de Banco Bradesco Financiamentos S/a (Referente à Mov. Decisão -> Outras Decisões (CNJ:12164) - )",
+            "data": "31/07/2025",
+            "usuario": "PEDRO RICARDO MORELLO BRENDOLAN",
+            "tem_anexo": false
+          }
+        ]
+      },
+      "partes_envolvidas": {
+        "total": 3,
+        "polo_ativo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Banco Bradesco Financiamentos Sa",
+              "tipo": "Polo Ativo",
+              "documento": "",
+              "endereco": "Cidade de Deus, Prédio Novíssimo, 2º Andar, V nº  2º Andar",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "polo_passivo": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Rosane Aparecida Carlos Marques",
+              "tipo": "Polo Passivo",
+              "documento": "",
+              "endereco": "Rua Santa Rita de Cássia, Q 17, LOTE 08, Vila Abadia de Goiás, nº 00",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        },
+        "outras_partes": {
+          "quantidade": 1,
+          "detalhes": [
+            {
+              "nome": "Com Custas",
+              "tipo": "Outras",
+              "documento": "",
+              "endereco": "",
+              "telefone": "",
+              "email": "",
+              "advogado": "",
+              "oab": ""
+            }
+          ]
+        }
+      },
+      "anexos": {
+        "total": 0,
+        "detalhes": []
+      }
+    }
+  ]
+}

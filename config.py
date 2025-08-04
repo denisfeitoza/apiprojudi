@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     playwright_headless: bool = Field(default=False, env="PLAYWRIGHT_HEADLESS")  # SEMPRE VISÍVEL para debug dos 7 processos
     playwright_slow_mo: int = Field(default=0, env="PLAYWRIGHT_SLOW_MO")
     playwright_timeout: int = Field(default=60000, env="PLAYWRIGHT_TIMEOUT")  # Balanceado: 60s
-    max_browsers: int = Field(default=5, env="MAX_BROWSERS")
+    max_browsers: int = Field(default=10, env="MAX_BROWSERS")
     
     # Configurações Redis
     redis_url: str = Field(default="redis://localhost:6379", env="REDIS_URL")

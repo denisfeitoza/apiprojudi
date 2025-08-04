@@ -121,6 +121,7 @@ class ProcessoDetalhadoResponse(BaseModel):
     data_distribuicao: Optional[str] = None
     valor_causa: Optional[str] = None
     orgao_julgador: Optional[str] = None
+    id_acesso: Optional[str] = None  # ID de acesso do projeto localizado na página inicial
     
     # Movimentações
     movimentacoes: List[MovimentacaoResponse] = []

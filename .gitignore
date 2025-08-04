@@ -54,3 +54,13 @@ Thumbs.db
 *.key
 *.pem
 credentials.json
+
+# Arquivos de debug/teste removidos do projeto
+*.html
+*.json
+RESUMO_*.md
+relatorio_*.md
+busca_*.json
+
+# Cache do Playwright
+ms-playwright/

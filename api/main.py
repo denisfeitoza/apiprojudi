@@ -297,6 +297,7 @@ class ProjudiService:
             data_distribuicao=dados.data_distribuicao,
             valor_causa=dados.valor_causa,
             orgao_julgador=dados.orgao_julgador,
+            id_acesso=dados.id_acesso,
             movimentacoes=movimentacoes,
             total_movimentacoes=len(movimentacoes),
             partes_polo_ativo=partes_ativo,

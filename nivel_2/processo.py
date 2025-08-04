@@ -54,6 +54,7 @@ class DadosProcesso:
     data_distribuicao: str = ""
     valor_causa: str = ""
     orgao_julgador: str = ""
+    id_acesso: str = ""  # ID de acesso do projeto localizado na página inicial
     movimentacoes: List[Movimentacao] = None
     partes_polo_ativo: List[ParteEnvolvida] = None
     partes_polo_passivo: List[ParteEnvolvida] = None
@@ -203,7 +204,8 @@ class ProcessoManager:
                 data_autuacao=dados_basicos.get('data_autuacao', ''),
                 data_distribuicao=dados_basicos.get('data_distribuicao', ''),
                 valor_causa=dados_basicos.get('valor_causa', ''),
-                orgao_julgador=dados_basicos.get('orgao_julgador', '')
+                orgao_julgador=dados_basicos.get('orgao_julgador', ''),
+                id_acesso=dados_basicos.get('id_acesso', '')
             )
             
         except Exception as e:
@@ -242,6 +244,7 @@ class ProcessoManager:
                 data_distribuicao=dados_basicos.get('data_distribuicao', ''),
                 valor_causa=dados_basicos.get('valor_causa', ''),
                 orgao_julgador=dados_basicos.get('orgao_julgador', ''),
+                id_acesso=dados_basicos.get('id_acesso', ''),
                 movimentacoes=movimentacoes,
                 partes_polo_ativo=partes.get('polo_ativo', []),
                 partes_polo_passivo=partes.get('polo_passivo', []),
@@ -269,6 +272,24 @@ class ProcessoManager:
             
             # Extrair dados usando regex e BeautifulSoup
             texto_pagina = soup.get_text()
+            
+            # ID de acesso do projeto (span com id="span_proc_numero")
+            try:
+                span_proc_numero = soup.find('span', {'id': 'span_proc_numero'})
+                if span_proc_numero:
+                    id_acesso = span_proc_numero.get_text(strip=True)
+                    if id_acesso:
+                        dados['id_acesso'] = id_acesso
+                        logger.debug(f"🆔 ID de acesso extraído: {id_acesso}")
+                else:
+                    # Fallback: tentar encontrar por XPath via regex no HTML
+                    xpath_match = re.search(r'<span[^>]*id="span_proc_numero"[^>]*class="bold"[^>]*>\s*([^<]+)\s*</span>', content, re.I | re.S)
+                    if xpath_match:
+                        id_acesso = xpath_match.group(1).strip()
+                        dados['id_acesso'] = id_acesso
+                        logger.debug(f"🆔 ID de acesso extraído via fallback: {id_acesso}")
+            except Exception as e:
+                logger.warning(f"⚠️ Erro ao extrair ID de acesso: {e}")
             
             # Data de autuação
             match = re.search(r'Data\s+de\s+Autuação[:\s]+(\d{2}/\d{2}/\d{4})', texto_pagina, re.I)
@@ -1603,62 +1624,47 @@ class ProcessoManager:
         return False
     
     def _parece_nome_valido(self, texto: str) -> bool:
-        """Verifica se o texto parece ser um nome válido de pessoa ou empresa"""
+        """Verifica se o texto parece ser um nome válido de pessoa ou empresa (versão simplificada)"""
         if not texto or len(texto) < 3:
             return False
         
         texto_limpo = texto.strip()
         
-        # Verificar se é endereço
-        if self._parece_endereco(texto_limpo):
+        # Rejeitar textos muito longos
+        if len(texto_limpo) > 120:
             return False
-        
-        # Rejeitar textos muito longos (provavelmente não são nomes)
-        if len(texto_limpo) > 80:
-            return False
-        
-        # Rejeitar se contém palavras que não são nomes
-        palavras_rejeitadas = [
-            'cpf', 'cnpj', 'telefone', 'email', 'endereço', 'cep', 'bairro',
-            'cidade', 'estado', 'observação', 'código', 'processo', 'documento',
-            'certidão', 'registro', 'matrícula', 'protocolo', 'data', 'valor',
-            'moeda', 'real', 'reais', 'brasil', 'página', 'arquivo', 'pdf'
-        ]
-        
-        for palavra in palavras_rejeitadas:
-            if palavra in texto_limpo.lower():
-                return False
         
         # Rejeitar se é só números, símbolos ou código
         if re.match(r'^[\d\s\-\.\/\(\)]+$', texto_limpo):
             return False
         
-        # Rejeitar se contém muitos símbolos especiais
-        simbolos = re.findall(r'[^\w\sÀ-Ÿà-ÿ]', texto_limpo)
-        if len(simbolos) > len(texto_limpo) * 0.2:  # Mais de 20% símbolos
+        # Rejeitar palavras técnicas muito específicas
+        palavras_rejeitadas = [
+            'conhecimento', 'ativo', 'processo', 'vara', 'tribunal', 'custas',
+            'código', 'protocolo', 'certidão', 'cpf', 'cnpj', 'registro'
+        ]
+        
+        # Verificar se contém apenas palavras rejeitadas
+        palavras_texto = texto_limpo.lower().split()
+        if all(palavra in palavras_rejeitadas for palavra in palavras_texto if len(palavra) > 2):
             return False
         
-        # Padrões que indicam nomes válidos
-        # Nome de pessoa: pelo menos 2 palavras, primeira letra maiúscula
-        padrao_pessoa = r'^[A-ZÀ-Ÿ][a-zà-ÿ\s]+\s+[A-ZÀ-Ÿ][a-zà-ÿ]+.*$'
+        # Deve ter pelo menos uma letra
+        if not re.search(r'[a-zA-ZÀ-Ÿà-ÿ]', texto_limpo):
+            return False
         
-        # Nome de empresa: pode conter palavras como LTDA, SA, etc.
-        padrao_empresa = r'.*(LTDA|S\.?A\.?|ME|EPP|EIRELI|CORP|INCORPORA|CONSTRU|EMPREEN|BANCO|EMPRESA|COMERCIO).*'
+        # Deve ter pelo menos 2 palavras significativas (2+ caracteres)
+        palavras_significativas = [p for p in texto_limpo.split() if len(p) >= 2]
+        if len(palavras_significativas) < 1:  # Relaxado de 2 para 1
+            return False
         
-        # Verificar se contém pelo menos uma letra maiúscula e minúscula (formato nome próprio)
-        tem_maiuscula = bool(re.search(r'[A-ZÀ-Ÿ]', texto_limpo))
-        tem_minuscula = bool(re.search(r'[a-zà-ÿ]', texto_limpo))
+        # Não deve ter mais de 50% números
+        numeros = re.findall(r'\d', texto_limpo)
+        if len(numeros) > len(texto_limpo) * 0.5:
+            return False
         
-        if (re.match(padrao_pessoa, texto_limpo) or re.search(padrao_empresa, texto_limpo, re.IGNORECASE)) and tem_maiuscula and tem_minuscula:
-            # Verificar se não contém muitos números (não deve ser código/documento)
-            numeros = re.findall(r'\d', texto_limpo)
-            if len(numeros) < len(texto_limpo) * 0.2:  # Menos de 20% números
-                # Verificar se tem pelo menos 2 palavras significativas
-                palavras = [p for p in texto_limpo.split() if len(p) >= 2]
-                if len(palavras) >= 2:
-                    return True
-        
-        return False
+        # APROVADO: Muito mais permissivo para capturar nomes reais
+        return True
     
     def _obter_contexto_elemento(self, elemento) -> str:
         """Obtém contexto do elemento para determinar tipo de parte"""

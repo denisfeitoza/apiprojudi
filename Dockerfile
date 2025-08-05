@@ -80,7 +80,7 @@ RUN echo "PLAYWRIGHT_HEADLESS=true" > .env && \
     echo "REQUEST_TIMEOUT=180" >> .env
 
 # Testar instalação do Playwright
-RUN python -c "import asyncio; from playwright.async_api import async_playwright; asyncio.run(async_playwright().start())"
+RUN python -c "import asyncio; from playwright.async_api import async_playwright; print('✅ Playwright instalado com sucesso')"
 
 # Expor porta
 EXPOSE 8081

@@ -211,8 +211,17 @@ class SessionManager:
                     await asyncio.sleep(5 * tentativa)
                 
                 # Configurações robustas para VPS Linux (Chromium) e macOS (Firefox)
+                import platform
+                import os
+                
+                # Forçar headless em VPS Linux
+                force_headless = settings.playwright_headless
+                if platform.system() == "Linux":
+                    force_headless = True
+                    logger.info("🔧 Forçando modo headless em VPS Linux")
+                
                 launch_args = {
-                    'headless': settings.playwright_headless,
+                    'headless': force_headless,
                     'slow_mo': max(1000, settings.playwright_slow_mo),  # Mínimo 1 segundo
                     'timeout': 60000  # 60 segundos para launch
                 }
@@ -227,7 +236,48 @@ class SessionManager:
                             '--disable-accelerated-2d-canvas',
                             '--no-first-run',
                             '--no-zygote',
-                            '--disable-gpu'
+                            '--disable-gpu',
+                            '--disable-xvfb',
+                            '--disable-software-rasterizer',
+                            '--disable-background-timer-throttling',
+                            '--disable-backgrounding-occluded-windows',
+                            '--disable-renderer-backgrounding',
+                            '--disable-features=TranslateUI',
+                            '--disable-ipc-flooding-protection',
+                            '--disable-back-forward-cache',
+                            '--disable-features=VizDisplayCompositor',
+                            '--disable-extensions',
+                            '--disable-plugins',
+                            '--disable-images',
+                            '--disable-javascript',
+                            '--disable-web-security',
+                            '--disable-features=VizDisplayCompositor',
+                            '--disable-remote-fonts',
+                            '--disable-default-apps',
+                            '--disable-sync',
+                            '--disable-translate',
+                            '--disable-logging',
+                            '--disable-breakpad',
+                            '--disable-component-extensions-with-background-pages',
+                            '--disable-component-update',
+                            '--disable-client-side-phishing-detection',
+                            '--disable-hang-monitor',
+                            '--disable-prompt-on-repost',
+                            '--disable-popup-blocking',
+                            '--disable-search-engine-choice-screen',
+                            '--disable-features=AcceptCHFrame,AutoExpandDetailsElement,AvoidUnnecessaryBeforeUnloadCheckSync,CertificateTransparencyComponentUpdater,DestroyProfileOnBrowserClose,DialMediaRouteProvider,ExtensionManifestV2Disabled,GlobalMediaControls,HttpsUpgrades,ImprovedCookieControls,LazyFrameLoading,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate',
+                            '--force-color-profile=srgb',
+                            '--metrics-recording-only',
+                            '--password-store=basic',
+                            '--use-mock-keychain',
+                            '--no-service-autorun',
+                            '--export-tagged-pdf',
+                            '--unsafely-disable-devtools-self-xss-warnings',
+                            '--edge-skip-compat-layer-relaunch',
+                            '--enable-automation',
+                            '--remote-debugging-pipe',
+                            '--no-startup-window',
+                            '--headless=new'
                         ]
                     })
                 

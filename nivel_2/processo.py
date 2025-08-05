@@ -221,7 +221,7 @@ class ProcessoManager:
         """Extrai partes envolvidas do processo (método público)"""
         return await self._extrair_partes_envolvidas(session)
     
-    async def buscar_processo_especifico(self, session: Session, numero_processo: str) -> Optional[DadosProcesso]:
+    async def buscar_processo_especifico(self, session: Session, numero_processo: str, limite_movimentacoes: Optional[int] = None) -> Optional[DadosProcesso]:
         """Busca um processo específico diretamente no nível 2 (contorna nível 1)"""
         try:
             logger.info(f"🔍 Buscando processo específico: {numero_processo}")
@@ -260,8 +260,8 @@ class ProcessoManager:
                     indice=1
                 )
                 
-                # Extrair dados completos
-                return await self.extrair_dados_processo(session, processo_temp)
+                # Extrair dados completos com limite de movimentações
+                return await self.extrair_dados_processo(session, processo_temp, limite_movimentacoes)
             else:
                 logger.warning(f"⚠️ Processo {numero_processo} não encontrado ou não acessível")
                 return None

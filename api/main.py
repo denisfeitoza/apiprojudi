@@ -106,7 +106,8 @@ class ProjudiService:
                     # Buscar diretamente no nível 2
                     dados_processo = await processo_manager.buscar_processo_especifico(
                         session, 
-                        request.valor
+                        request.valor,
+                        request.limite_movimentacoes
                     )
                     
                     if dados_processo:

@@ -1,0 +1,128 @@
+name: 🚀 Deploy PROJUDI API v4
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: 📦 Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          build-essential \
+          libssl-dev \
+          libffi-dev \
+          python3-dev \
+          pkg-config \
+          libgirepository1.0-dev \
+          libcairo2-dev \
+          libpango1.0-dev \
+          libatk1.0-dev \
+          libgdk-pixbuf2.0-dev \
+          libgtk-3-dev \
+          libxss-dev \
+          libasound2-dev \
+          libnss3-dev \
+          libdrm-dev \
+          libxkbcommon-dev \
+          libxcomposite-dev \
+          libxdamage-dev \
+          libxrandr-dev \
+          libgbm-dev \
+          libxshmfence-dev \
+          libpulse-dev \
+          libavcodec-dev \
+          libavformat-dev \
+          libswscale-dev \
+          libvpx-dev \
+          libwebp-dev \
+          libjpeg-dev \
+          libpng-dev \
+          libtiff-dev \
+          libgif-dev \
+          libfreetype6-dev \
+          libfontconfig1-dev \
+          libharfbuzz-dev \
+          libfribidi-dev \
+          libpixman-1-dev \
+          redis-server
+          
+    - name: 🔴 Start Redis
+      run: |
+        sudo systemctl start redis-server
+        sudo systemctl enable redis-server
+        
+    - name: 📚 Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 🌐 Install Playwright
+      run: |
+        playwright install
+        playwright install-deps
+        
+    - name: ⚙️ Create .env file
+      run: |
+        cat > .env << EOF
+        PLAYWRIGHT_HEADLESS=true
+        PORT=8081
+        MAX_BROWSERS=5
+        PLAYWRIGHT_TIMEOUT=30000
+        HOST=0.0.0.0
+        DEBUG=false
+        USE_REDIS=true
+        REDIS_URL=redis://localhost:6379
+        MAX_CONCURRENT_REQUESTS=5
+        REQUEST_TIMEOUT=180
+        EOF
+        
+    - name: 🧪 Test Playwright installation
+      run: |
+        python -c "
+        import asyncio
+        from playwright.async_api import async_playwright
+        
+        async def test():
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(headless=True)
+                page = await browser.new_page()
+                await page.goto('https://example.com')
+                title = await page.title()
+                print(f'✅ Playwright funcionando! Título: {title}')
+                await browser.close()
+        
+        asyncio.run(test())
+        "
+        
+    - name: 🚀 Start API and test
+      run: |
+        python main.py &
+        API_PID=$!
+        sleep 10
+        
+        # Test API
+        curl -f http://localhost:8081/status || exit 1
+        
+        # Stop API
+        kill $API_PID
+        
+    - name: ✅ Deploy successful
+      run: |
+        echo "🎉 Deploy concluído com sucesso!"
+        echo "🌐 API disponível em: http://localhost:8081"
+        echo "📊 Status: http://localhost:8081/status" 

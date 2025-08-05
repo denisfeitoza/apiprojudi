@@ -48,7 +48,18 @@ class SessionManager:
         try:
             logger.info("🚀 Inicializando Playwright...")
             self.playwright = await async_playwright().start()
-            self.browser_type = self.playwright.firefox  # Usar Firefox (mais estável no macOS)
+            # Detectar sistema operacional para escolher o melhor browser
+            import platform
+            import os
+            
+            if platform.system() == "Linux" and os.environ.get('PLAYWRIGHT_HEADLESS', 'true').lower() == 'true':
+                # VPS Linux: usar Chromium (mais estável em headless)
+                self.browser_type = self.playwright.chromium
+                logger.info("🌐 Usando Chromium (VPS Linux headless)")
+            else:
+                # macOS/Windows: usar Firefox (mais estável)
+                self.browser_type = self.playwright.firefox
+                logger.info("🦊 Usando Firefox (macOS/Windows)")
             
             # Instalar navegadores se necessário
             logger.info("📦 Verificando instalação dos navegadores...")
@@ -195,12 +206,28 @@ class SessionManager:
                 if tentativa > 0:
                     await asyncio.sleep(5 * tentativa)
                 
-                # Configurações robustas do Firefox para macOS
-                browser = await self.browser_type.launch(
-                    headless=settings.playwright_headless,
-                    slow_mo=max(1000, settings.playwright_slow_mo),  # Mínimo 1 segundo
-                    timeout=60000  # 60 segundos para launch
-                )
+                # Configurações robustas para VPS Linux (Chromium) e macOS (Firefox)
+                launch_args = {
+                    'headless': settings.playwright_headless,
+                    'slow_mo': max(1000, settings.playwright_slow_mo),  # Mínimo 1 segundo
+                    'timeout': 60000  # 60 segundos para launch
+                }
+                
+                # Adicionar argumentos específicos para VPS Linux
+                if settings.playwright_headless:
+                    launch_args.update({
+                        'args': [
+                            '--no-sandbox',
+                            '--disable-setuid-sandbox',
+                            '--disable-dev-shm-usage',
+                            '--disable-accelerated-2d-canvas',
+                            '--no-first-run',
+                            '--no-zygote',
+                            '--disable-gpu'
+                        ]
+                    })
+                
+                browser = await self.browser_type.launch(**launch_args)
                 
                 # Criar contexto com configurações
                 context = await browser.new_context(

@@ -34,8 +34,8 @@ pip install playwright
 
 # 5. Instalar navegadores
 echo "🌐 Instalando navegadores..."
-playwright install
-playwright install-deps
+playwright install chromium
+playwright install-deps chromium
 
 # 6. Verificar instalação
 echo "✅ Verificando instalação..."

@@ -61,8 +61,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Instalar Playwright e navegadores
-RUN playwright install && \
-    playwright install-deps
+RUN playwright install chromium && \
+    playwright install-deps chromium
 
 # Copiar código da aplicação
 COPY . .

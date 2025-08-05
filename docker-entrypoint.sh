@@ -30,7 +30,16 @@ from playwright.async_api import async_playwright
 
 async def test():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        # Usar Chromium (mais estável em VPS Linux)
+        browser = await p.chromium.launch(headless=True, args=[
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu'
+        ])
         page = await browser.new_page()
         await page.goto('https://example.com')
         title = await page.title()

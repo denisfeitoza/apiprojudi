@@ -73,8 +73,8 @@ jobs:
         
     - name: 🌐 Install Playwright
       run: |
-        playwright install
-        playwright install-deps
+        playwright install chromium
+        playwright install-deps chromium
         
     - name: ⚙️ Create .env file
       run: |

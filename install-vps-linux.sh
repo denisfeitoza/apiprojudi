@@ -119,8 +119,8 @@ pip install -r requirements.txt
 
 # 8. Instalar Playwright e navegadores
 echo "🌐 Instalando Playwright..."
-playwright install
-playwright install-deps
+playwright install chromium
+playwright install-deps chromium
 
 # 9. Verificar instalação do Playwright
 echo "✅ Verificando instalação do Playwright..."

@@ -8578,3 +8578,55 @@
 2025-08-05 02:39:44 | INFO | nivel_2.processo:_extrair_partes_envolvidas:1396 | ✅ 12 partes extraídas
 2025-08-05 02:39:44 | INFO | nivel_2.processo:extrair_dados_processo:308 | ✅ Dados extraídos: 71 movimentações, 12 partes
 2025-08-05 02:39:44 | INFO | core.session_manager:release_session:146 | 🔓 Sessão liberada: 2f4a0a32-bff8-4182-9fab-aa456407e063
+2025-08-05 02:44:44 | INFO | api.main:limpar_requisicao_ativa:740 | 🧹 Requisição 449bebc6-9902-40cf-834e-011b9620b216 removida da lista ativa
+2025-08-05 02:44:44 | INFO | api.main:lifespan:44 | 🔄 Finalizando PROJUDI API v4...
+2025-08-05 02:44:44 | INFO | core.session_manager:shutdown:72 | 🔄 Finalizando SessionManager...
+2025-08-05 02:44:44 | INFO | core.session_manager:close_session:163 | 🗑️ Sessão fechada: 2f4a0a32-bff8-4182-9fab-aa456407e063
+2025-08-05 02:44:44 | INFO | core.session_manager:close_all_sessions:184 | 🧹 Todas as 1 sessões foram fechadas
+2025-08-05 02:44:44 | INFO | core.cache_manager:shutdown:51 | 🔄 Cache Redis desconectado
+2025-08-05 02:44:45 | INFO | core.session_manager:shutdown:92 | ✅ SessionManager finalizado
+2025-08-05 02:44:45 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
+2025-08-05 02:44:45 | INFO | api.main:lifespan:47 | ✅ API finalizada
+2025-08-05 02:47:59 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-05 02:47:59 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=False
+2025-08-05 02:47:59 | INFO | __main__:main:25 | 🎯 Playwright: Headless=True, Max Browsers=10
+2025-08-05 02:47:59 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-05 02:47:59 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-05 02:48:00 | INFO | core.session_manager:initialize:62 | 🦊 Usando Firefox (macOS/Windows)
+2025-08-05 02:48:00 | INFO | core.session_manager:initialize:65 | 📦 Verificando instalação dos navegadores...
+2025-08-05 02:48:00 | INFO | core.cache_manager:initialize:38 | ✅ Cache Redis conectado: redis://localhost:6379
+2025-08-05 02:48:00 | INFO | core.session_manager:initialize:74 | ✅ SessionManager inicializado com sucesso
+2025-08-05 02:48:00 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-05 02:48:17 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca dd1296d2-45ab-4d3e-88da-68a3d1d34238: processo = 0508844-37.2007.8.09.0024
+2025-08-05 02:48:17 | INFO | core.session_manager:_create_session:201 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-05 02:48:21 | INFO | core.session_manager:_create_session:265 | ✅ Sessão criada com sucesso: f81f97a7-a0e8-4896-b17c-9a1350301616
+2025-08-05 02:48:21 | INFO | core.session_manager:_get_session_internal:138 | 🆕 Nova sessão criada: f81f97a7-a0e8-4896-b17c-9a1350301616
+2025-08-05 02:48:21 | INFO | api.main:processar_busca_completa:104 | 🔍 Busca por processo específico detectada: 0508844-37.2007.8.09.0024
+2025-08-05 02:48:21 | INFO | nivel_2.processo:buscar_processo_especifico:227 | 🔍 Buscando processo específico: 0508844-37.2007.8.09.0024
+2025-08-05 02:48:21 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão f81f97a7-a0e8-4896-b17c-9a1350301616...
+2025-08-05 02:48:32 | INFO | nivel_1.busca:_selecionar_serventia:140 | ✅ Serventia selecionada: Advogados - OAB/Matrícula: 25348-N-GO
+2025-08-05 02:48:32 | INFO | nivel_1.busca:fazer_login:93 | ✅ Login realizado com sucesso na sessão f81f97a7-a0e8-4896-b17c-9a1350301616
+2025-08-05 02:48:37 | INFO | nivel_2.processo:buscar_processo_especifico:251 | ✅ Processo 0508844-37.2007.8.09.0024 encontrado diretamente
+2025-08-05 02:48:37 | INFO | nivel_2.processo:extrair_dados_processo:276 | 📋 Extraindo dados do processo 0508844-37.2007.8.09.0024
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_movimentacoes:382 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_movimentacoes:387 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_movimentacoes:391 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:500 | ✅ 71 movimentações extraídas da tabela
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_movimentacoes:446 | 📊 Total de movimentações encontradas: 71
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_movimentacoes:453 | ✅ 71 movimentações extraídas com sucesso
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_envolvidas:1348 | 👥 Extraindo partes envolvidas...
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_envolvidas:1355 | 🔍 URL atual: https://projudi.tjgo.jus.br/BuscaProcesso
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_envolvidas:1356 | 🔍 Procurando partes na página atual...
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_envolvidas:1369 | 🔍 Extraindo partes da página atual...
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_da_pagina:1415 | 🔍 Iniciando extração inteligente de partes...
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_do_fieldset:1886 | 🔍 Fieldset Polo Ativo: 2 spans com nomes encontrados
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_do_fieldset:1975 | 📋 Fieldset Polo Ativo: 2 partes únicas extraídas
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_do_fieldset:1886 | 🔍 Fieldset Polo Passivo: 12 spans com nomes encontrados
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_do_fieldset:1975 | 📋 Fieldset Polo Passivo: 7 partes únicas extraídas
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_do_fieldset:1886 | 🔍 Fieldset Outras: 7 spans com nomes encontrados
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_do_fieldset:1975 | 📋 Fieldset Outras: 3 partes únicas extraídas
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_da_pagina:1420 | ✅ Estratégia 1 (Fieldsets): Encontradas 12 partes
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_da_pagina:1460 | 🎯 Total final: 12 partes únicas extraídas
+2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_envolvidas:1396 | ✅ 12 partes extraídas
+2025-08-05 02:48:37 | INFO | nivel_2.processo:extrair_dados_processo:308 | ✅ Dados extraídos: 71 movimentações, 12 partes
+2025-08-05 02:48:37 | INFO | core.session_manager:release_session:157 | 🔓 Sessão liberada: f81f97a7-a0e8-4896-b17c-9a1350301616

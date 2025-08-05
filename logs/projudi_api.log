@@ -8630,3 +8630,20 @@
 2025-08-05 02:48:37 | INFO | nivel_2.processo:_extrair_partes_envolvidas:1396 | ✅ 12 partes extraídas
 2025-08-05 02:48:37 | INFO | nivel_2.processo:extrair_dados_processo:308 | ✅ Dados extraídos: 71 movimentações, 12 partes
 2025-08-05 02:48:37 | INFO | core.session_manager:release_session:157 | 🔓 Sessão liberada: f81f97a7-a0e8-4896-b17c-9a1350301616
+2025-08-05 02:52:19 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-05 02:52:19 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=False
+2025-08-05 02:52:19 | INFO | __main__:main:25 | 🎯 Playwright: Headless=True, Max Browsers=10
+2025-08-05 02:52:21 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-05 02:52:21 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-05 02:52:22 | INFO | core.session_manager:initialize:58 | 🌐 Usando Chromium (modo headless)
+2025-08-05 02:52:22 | INFO | core.session_manager:initialize:69 | 📦 Verificando instalação dos navegadores...
+2025-08-05 02:52:22 | INFO | core.cache_manager:initialize:38 | ✅ Cache Redis conectado: redis://localhost:6379
+2025-08-05 02:52:22 | INFO | core.session_manager:initialize:78 | ✅ SessionManager inicializado com sucesso
+2025-08-05 02:52:22 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-05 02:52:41 | INFO | api.main:lifespan:44 | 🔄 Finalizando PROJUDI API v4...
+2025-08-05 02:52:41 | INFO | core.session_manager:shutdown:87 | 🔄 Finalizando SessionManager...
+2025-08-05 02:52:41 | INFO | core.session_manager:close_all_sessions:199 | 🧹 Todas as 0 sessões foram fechadas
+2025-08-05 02:52:41 | INFO | core.cache_manager:shutdown:51 | 🔄 Cache Redis desconectado
+2025-08-05 02:52:42 | INFO | core.session_manager:shutdown:107 | ✅ SessionManager finalizado
+2025-08-05 02:52:42 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
+2025-08-05 02:52:42 | INFO | api.main:lifespan:47 | ✅ API finalizada

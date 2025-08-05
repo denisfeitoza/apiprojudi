@@ -52,10 +52,14 @@ class SessionManager:
             import platform
             import os
             
-            if platform.system() == "Linux" and os.environ.get('PLAYWRIGHT_HEADLESS', 'true').lower() == 'true':
-                # VPS Linux: usar Chromium (mais estável em headless)
+            # Sempre usar Chromium em modo headless (mais estável em VPS)
+            if settings.playwright_headless:
                 self.browser_type = self.playwright.chromium
-                logger.info("🌐 Usando Chromium (VPS Linux headless)")
+                logger.info("🌐 Usando Chromium (modo headless)")
+            elif platform.system() == "Linux":
+                # VPS Linux: usar Chromium mesmo sem headless
+                self.browser_type = self.playwright.chromium
+                logger.info("🌐 Usando Chromium (VPS Linux)")
             else:
                 # macOS/Windows: usar Firefox (mais estável)
                 self.browser_type = self.playwright.firefox

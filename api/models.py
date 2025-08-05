@@ -86,6 +86,7 @@ class MovimentacaoResponse(BaseModel):
     data: str
     usuario: str
     tem_anexo: bool
+    numero_processo: Optional[str] = None  # Número do processo ao qual pertence
 
 class ParteEnvolvidaResponse(BaseModel):
     """Parte envolvida no processo"""

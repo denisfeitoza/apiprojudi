@@ -15,6 +15,7 @@ from loguru import logger
 
 from config import settings
 from core.session_manager import Session
+from core.cache_manager import cache_manager
 
 class TipoBusca(str, Enum):
     CPF = "cpf"
@@ -51,6 +52,14 @@ class LoginManager:
         try:
             logger.info(f"🔐 Fazendo login na sessão {session.id}...")
             
+            # Verificar cache de login
+            cache_key = f"login_status_{session.id}"
+            cached_login = await cache_manager.get(cache_key)
+            if cached_login and cached_login.get('logged_in'):
+                logger.info(f"✅ Login em cache para sessão {session.id}")
+                session.is_logged_in = True
+                return True
+            
             # Navegar para página de login
             login_url = f"{settings.projudi_base_url}/LogOn?PaginaAtual=-200"
             await session.page.goto(login_url, timeout=120000)
@@ -62,6 +71,8 @@ class LoginManager:
             if await LoginManager._ja_esta_logado(session.page):
                 logger.info(f"✅ Já estava logado na sessão {session.id}")
                 session.is_logged_in = True
+                # Cachear status de login por 30 minutos
+                await cache_manager.set(cache_key, {'logged_in': True}, expire=1800)
                 return True
             
             # Preencher credenciais com aguardos para estabilidade
@@ -81,6 +92,8 @@ class LoginManager:
             if await LoginManager._selecionar_serventia(session.page):
                 logger.info(f"✅ Login realizado com sucesso na sessão {session.id}")
                 session.is_logged_in = True
+                # Cachear status de login por 30 minutos
+                await cache_manager.set(cache_key, {'logged_in': True}, expire=1800)
                 return True
             else:
                 logger.error(f"❌ Falha na seleção de serventia na sessão {session.id}")
@@ -204,6 +217,35 @@ class BuscaManager:
         start_time = time.time()
         
         try:
+            # Verificar cache de busca
+            cache_key = f"busca_{tipo_busca.value}_{valor}"
+            cached_result = await cache_manager.get(cache_key)
+            if cached_result:
+                logger.info(f"✅ Resultado em cache para busca {tipo_busca.value} = {valor}")
+                
+                # Converter dicionários de volta para objetos ProcessoEncontrado
+                processos_cache = []
+                for p_dict in cached_result.get('processos', []):
+                    processo = ProcessoEncontrado(
+                        numero=p_dict.get('numero', ''),
+                        classe=p_dict.get('classe', ''),
+                        assunto=p_dict.get('assunto', ''),
+                        id_processo=p_dict.get('id_processo', ''),
+                        indice=p_dict.get('indice', 0),
+                        url_processo=p_dict.get('url_processo', '')
+                    )
+                    processos_cache.append(processo)
+                
+                return ResultadoBusca(
+                    tipo_busca=tipo_busca,
+                    valor_busca=valor,
+                    total_encontrados=cached_result.get('total_encontrados', 0),
+                    processos=processos_cache,
+                    sucesso=cached_result.get('sucesso', False),
+                    mensagem=cached_result.get('mensagem', ''),
+                    tempo_execucao=0.1  # Cache é muito rápido
+                )
+            
             # SEMPRE fazer login antes de cada busca para garantir sessão válida
             logger.info(f"🔐 Fazendo login antes da busca {tipo_busca.value}...")
             if not await LoginManager.fazer_login(session):
@@ -247,7 +289,7 @@ class BuscaManager:
             # Extrair resultados
             processos = await self._extrair_processos_encontrados(session.page)
             
-            return ResultadoBusca(
+            resultado = ResultadoBusca(
                 tipo_busca=tipo_busca,
                 valor_busca=valor,
                 total_encontrados=len(processos),
@@ -256,6 +298,17 @@ class BuscaManager:
                 mensagem="Busca realizada com sucesso",
                 tempo_execucao=time.time() - start_time
             )
+            
+            # Cachear resultado por 1 hora
+            cache_data = {
+                'total_encontrados': resultado.total_encontrados,
+                'processos': [p.__dict__ for p in resultado.processos],
+                'sucesso': resultado.sucesso,
+                'mensagem': resultado.mensagem
+            }
+            await cache_manager.set(cache_key, cache_data, expire=3600)
+            
+            return resultado
             
         except Exception as e:
             logger.error(f"❌ Erro na busca {tipo_busca} = {valor}: {e}")
@@ -432,8 +485,24 @@ class BuscaManager:
     async def _verificar_processo_direto(self, page: Page) -> bool:
         """Verifica se foi redirecionado diretamente para um processo"""
         try:
+            # Verificar se estamos na página de busca ou na página do processo
+            current_url = page.url
+            
+            # Se estamos na página de busca, não é processo direto
+            if "BuscaProcesso" in current_url:
+                return False
+            
+            # Verificar se há tabela de resultados (indica que há múltiplos processos)
+            tabela = await page.query_selector('table#Tabela')
+            if tabela:
+                return False
+            
+            # Verificar se há conteúdo específico de processo individual
             content = await page.content()
-            return "corpo_dados_processo" in content
+            if "corpo_dados_processo" in content:
+                return True
+            
+            return False
         except:
             return False
     

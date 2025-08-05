@@ -17,6 +17,8 @@ from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 from loguru import logger
 
 from config import settings
+from core.cache_manager import cache_manager
+from core.concurrency_manager import concurrency_manager
 
 @dataclass
 class Session:
@@ -52,6 +54,9 @@ class SessionManager:
             logger.info("📦 Verificando instalação dos navegadores...")
             # await self.playwright.chromium.install()
             
+            # Inicializar cache Redis
+            await cache_manager.initialize()
+            
             # Iniciar task de limpeza
             self._cleanup_task = asyncio.create_task(self._cleanup_sessions_task())
             
@@ -77,6 +82,9 @@ class SessionManager:
             # Fechar todas as sessões
             await self.close_all_sessions()
             
+            # Finalizar cache Redis
+            await cache_manager.shutdown()
+            
             # Finalizar Playwright
             if self.playwright:
                 await self.playwright.stop()
@@ -88,6 +96,10 @@ class SessionManager:
     
     async def get_session(self) -> Optional[Session]:
         """Obtém uma sessão disponível ou cria uma nova"""
+        return await concurrency_manager.execute_with_limits(self._get_session_internal)
+    
+    async def _get_session_internal(self) -> Optional[Session]:
+        """Implementação interna de get_session com cache"""
         async with self._lock:
             # Verificar se o Playwright foi inicializado
             if not self.playwright or not self.browser_type:
@@ -287,13 +299,31 @@ class SessionManager:
         busy = sum(1 for s in self.sessions.values() if s.is_busy)
         logged_in = sum(1 for s in self.sessions.values() if s.is_logged_in)
         
-        return {
+        # Estatísticas base
+        stats = {
             'total_sessions': total,
             'busy_sessions': busy,
             'available_sessions': total - busy,
             'logged_in_sessions': logged_in,
             'max_sessions': settings.max_browsers
         }
+        
+        # Adicionar estatísticas de concorrência
+        concurrency_stats = concurrency_manager.get_stats()
+        stats.update({
+            'concurrency': concurrency_stats
+        })
+        
+        # Adicionar estatísticas de cache
+        cache_stats = {
+            'cache_enabled': cache_manager.cache_enabled,
+            'cache_connected': cache_manager.is_connected
+        }
+        stats.update({
+            'cache': cache_stats
+        })
+        
+        return stats
 
 # Instância global do gerenciador
 session_manager = SessionManager()

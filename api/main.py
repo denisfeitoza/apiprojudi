@@ -17,6 +17,8 @@ from loguru import logger
 
 from config import settings
 from core.session_manager import session_manager, get_session
+from core.cache_manager import cache_manager
+from core.concurrency_manager import concurrency_manager
 from nivel_1.busca import busca_manager, TipoBusca, ResultadoBusca
 from nivel_2.processo import processo_manager, DadosProcesso
 from nivel_3.anexos import anexos_manager
@@ -83,8 +85,66 @@ class ProjudiService:
             if request.usuario or request.senha or request.serventia:
                 credenciais_originais = ProjudiService._aplicar_credenciais_customizadas(request)
             
-            # Nível 1: Busca
+            # Nível 1: Busca (ou busca direta para processo específico)
             async with get_session() as session:
+                # Detectar automaticamente se é busca por processo específico
+                # Se o valor não parece ser CPF nem nome, tratar como processo
+                import re
+                cpf_pattern = r'^\d{3}\.\d{3}\.\d{3}-\d{2}$'
+                nome_pattern = r'^[A-Za-zÀ-ÿ\s]+$'
+                
+                is_processo_especifico = (
+                    request.tipo_busca == "processo" or
+                    (not re.match(cpf_pattern, request.valor) and 
+                     not re.match(nome_pattern, request.valor) and
+                     len(request.valor) > 10)  # Processos têm números longos
+                )
+                
+                if is_processo_especifico:
+                    logger.info(f"🔍 Busca por processo específico detectada: {request.valor}")
+                    
+                    # Buscar diretamente no nível 2
+                    dados_processo = await processo_manager.buscar_processo_especifico(
+                        session, 
+                        request.valor
+                    )
+                    
+                    if dados_processo:
+                        # Converter para response
+                        processo_detalhado = await ProjudiService._converter_dados_processo(
+                            dados_processo, 
+                            []  # Sem anexos por padrão
+                        )
+                        
+                        return BuscaResponse(
+                            status="success",
+                            request_id=request_id,
+                            tipo_busca=request.tipo_busca,
+                            valor_busca=request.valor,
+                            total_processos_encontrados=1,
+                            processos_simples=[
+                                ProcessoSimples(
+                                    numero=dados_processo.numero,
+                                    classe=dados_processo.classe,
+                                    assunto=dados_processo.assunto,
+                                    id_processo="processo_direto",
+                                    indice=1
+                                )
+                            ],
+                            processos_detalhados=[processo_detalhado],
+                            tempo_execucao=time.time() - start_time
+                        )
+                    else:
+                        return BuscaResponse(
+                            status="error",
+                            request_id=request_id,
+                            tipo_busca=request.tipo_busca,
+                            valor_busca=request.valor,
+                            erro="Processo não encontrado",
+                            tempo_execucao=time.time() - start_time
+                        )
+                
+                # Para CPF e NOME, usar método normal do nível 1
                 resultado_busca = await busca_manager.executar_busca(
                     session, 
                     TipoBusca(request.tipo_busca), 
@@ -223,7 +283,8 @@ class ProjudiService:
                 descricao=m.descricao,
                 data=m.data,
                 usuario=m.usuario,
-                tem_anexo=m.tem_anexo
+                tem_anexo=m.tem_anexo,
+                numero_processo=m.numero_processo
             )
             for m in dados.movimentacoes
         ]
@@ -376,11 +437,22 @@ async def get_status():
     """Status da API"""
     stats = session_manager.get_stats()
     
+    # Adicionar informações de cache e concorrência
+    cache_info = {
+        "enabled": cache_manager.cache_enabled,
+        "connected": cache_manager.is_connected,
+        "url": settings.redis_url
+    }
+    
+    concurrency_info = concurrency_manager.get_stats()
+    
     return StatusResponse(
         total_sessoes=stats['total_sessions'],
         sessoes_ocupadas=stats['busy_sessions'],
         sessoes_disponiveis=stats['available_sessions'],
-        uptime="Online"
+        uptime="Online",
+        cache=cache_info,
+        concurrency=concurrency_info
     )
 
 @app.get("/health", response_model=HealthResponse)
@@ -583,6 +655,79 @@ async def cleanup():
     except Exception as e:
         logger.error(f"❌ Erro no cleanup: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/cache/status")
+async def get_cache_status():
+    """Retorna status do cache Redis"""
+    try:
+        stats = {
+            "enabled": cache_manager.cache_enabled,
+            "connected": cache_manager.is_connected,
+            "url": settings.redis_url
+        }
+        
+        if cache_manager.is_connected:
+            # Testar conexão
+            try:
+                await cache_manager.redis_client.ping()
+                stats["status"] = "online"
+            except:
+                stats["status"] = "error"
+        else:
+            stats["status"] = "disabled"
+        
+        return stats
+        
+    except Exception as e:
+        logger.error(f"❌ Erro ao verificar cache: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao verificar cache: {str(e)}")
+
+@app.post("/cache/clear")
+async def clear_cache():
+    """Limpa todo o cache Redis"""
+    try:
+        if not cache_manager.is_connected:
+            return {"status": "disabled", "message": "Cache Redis não está habilitado"}
+        
+        success = await cache_manager.clear_all()
+        if success:
+            return {"status": "success", "message": "Cache limpo com sucesso"}
+        else:
+            return {"status": "error", "message": "Falha ao limpar cache"}
+        
+    except Exception as e:
+        logger.error(f"❌ Erro ao limpar cache: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao limpar cache: {str(e)}")
+
+@app.get("/concurrency/stats")
+async def get_concurrency_stats():
+    """Retorna estatísticas de concorrência"""
+    try:
+        stats = concurrency_manager.get_stats()
+        return {
+            "status": "success",
+            "stats": stats,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Erro ao obter estatísticas: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao obter estatísticas: {str(e)}")
+
+@app.post("/concurrency/reset")
+async def reset_concurrency_stats():
+    """Reseta estatísticas de concorrência"""
+    try:
+        concurrency_manager.reset_stats()
+        return {
+            "status": "success",
+            "message": "Estatísticas resetadas com sucesso",
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Erro ao resetar estatísticas: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao resetar estatísticas: {str(e)}")
 
 # Funções auxiliares
 async def limpar_requisicao_ativa(request_id: str, delay: int = 0):

@@ -28,6 +28,7 @@ class Movimentacao:
     usuario: str
     tem_anexo: bool
     id_movimentacao: str
+    numero_processo: str = ""  # Número do processo ao qual pertence
     codigo_anexo: str = ""
     html_completo: str = ""
 
@@ -107,8 +108,8 @@ class ProcessoManager:
             
             # Estratégia 1: Encontrar o processo correto na tabela pelo número
             try:
-                # Aguardar a tabela carregar - timeout aumentado
-                await session.page.wait_for_selector('table#Tabela', timeout=60000)
+                # Aguardar a tabela carregar - timeout reduzido
+                await session.page.wait_for_selector('table#Tabela', timeout=15000)
                 
                 # Procurar especificamente nas linhas do tbody
                 linhas = await session.page.query_selector_all('table#Tabela tbody tr')
@@ -129,7 +130,7 @@ class ProcessoManager:
                                 if btn_editar:
                                     logger.info(f"🎯 Processo encontrado na linha {i+1}, clicando no botão...")
                                     await btn_editar.click()
-                                    await session.page.wait_for_load_state('networkidle', timeout=60000)
+                                    await session.page.wait_for_load_state('networkidle', timeout=15000)
                                     logger.info(f"✅ Processo {processo.numero} acessado via busca na tabela")
                                     return True
                                 else:
@@ -156,7 +157,7 @@ class ProcessoManager:
                 """
                 resultado = await session.page.evaluate(script)
                 if resultado:
-                    await session.page.wait_for_load_state('networkidle', timeout=60000)
+                    await session.page.wait_for_load_state('networkidle', timeout=15000)
                     logger.info("✅ Processo acessado via JavaScript")
                     return True
             
@@ -167,7 +168,7 @@ class ProcessoManager:
                 
                 if btn_editar:
                     await btn_editar.click()
-                    await session.page.wait_for_load_state('networkidle', timeout=60000)
+                    await session.page.wait_for_load_state('networkidle', timeout=15000)
                     logger.info("✅ Processo acessado via seletor específico")
                     return True
             
@@ -175,7 +176,7 @@ class ProcessoManager:
             btn_editar = await session.page.query_selector('button[name="formLocalizarimgEditar"]')
             if btn_editar:
                 await btn_editar.click()
-                await session.page.wait_for_load_state('networkidle', timeout=60000)
+                await session.page.wait_for_load_state('networkidle', timeout=15000)
                 logger.info("✅ Processo acessado via fallback")
                 return True
             
@@ -220,6 +221,55 @@ class ProcessoManager:
         """Extrai partes envolvidas do processo (método público)"""
         return await self._extrair_partes_envolvidas(session)
     
+    async def buscar_processo_especifico(self, session: Session, numero_processo: str) -> Optional[DadosProcesso]:
+        """Busca um processo específico diretamente no nível 2 (contorna nível 1)"""
+        try:
+            logger.info(f"🔍 Buscando processo específico: {numero_processo}")
+            
+            # Fazer login se necessário
+            from nivel_1.busca import LoginManager
+            if not await LoginManager.fazer_login(session):
+                logger.error("❌ Falha no login para busca de processo específico")
+                return None
+            
+            # Navegar para página de busca
+            busca_url = f"{self.base_url}/BuscaProcesso"
+            await session.page.goto(busca_url, timeout=15000)
+            await session.page.wait_for_load_state('networkidle', timeout=15000)
+            
+            # Preencher número do processo
+            await session.page.fill('input[name="ProcessoNumero"]', '')
+            await session.page.fill('input[name="ProcessoNumero"]', numero_processo)
+            
+            # Clicar em buscar
+            await session.page.click('input[value="Buscar"]')
+            await session.page.wait_for_load_state('networkidle', timeout=15000)
+            
+            # Verificar se foi redirecionado diretamente para o processo
+            content = await session.page.content()
+            if "corpo_dados_processo" in content:
+                logger.info(f"✅ Processo {numero_processo} encontrado diretamente")
+                
+                # Criar objeto ProcessoEncontrado temporário
+                from nivel_1.busca import ProcessoEncontrado
+                processo_temp = ProcessoEncontrado(
+                    numero=numero_processo,
+                    classe="Processo específico",
+                    assunto="Busca direta",
+                    id_processo="processo_direto",
+                    indice=1
+                )
+                
+                # Extrair dados completos
+                return await self.extrair_dados_processo(session, processo_temp)
+            else:
+                logger.warning(f"⚠️ Processo {numero_processo} não encontrado ou não acessível")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao buscar processo específico {numero_processo}: {e}")
+            return None
+    
     async def extrair_dados_processo(self, session: Session, processo: ProcessoEncontrado, limite_movimentacoes: Optional[int] = None) -> DadosProcesso:
         """Extrai dados completos de um processo"""
         try:
@@ -230,6 +280,10 @@ class ProcessoManager:
             
             # Extrair movimentações
             movimentacoes = await self._extrair_movimentacoes(session, limite_movimentacoes)
+            
+            # Adicionar número do processo a cada movimentação
+            for mov in movimentacoes:
+                mov.numero_processo = processo.numero
             
             # Extrair partes envolvidas
             partes = await self._extrair_partes_envolvidas(session)

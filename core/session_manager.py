@@ -52,12 +52,16 @@ class SessionManager:
             import platform
             import os
             
-            # Sempre usar Chromium (requisito do usuário)
-            self.browser_type = self.playwright.chromium
-            if platform.system() == "Linux":
-                logger.info("🌐 Usando Chromium (VPS Linux - headless)")
+            # Usar Firefox no macOS, Chromium no Linux
+            if platform.system() == "Darwin":  # macOS
+                self.browser_type = self.playwright.firefox
+                logger.info("🌐 Usando Firefox (macOS - visível)")
             else:
-                logger.info("🌐 Usando Chromium (Desktop - visível)")
+                self.browser_type = self.playwright.chromium
+                if platform.system() == "Linux":
+                    logger.info("🌐 Usando Chromium (VPS Linux - headless)")
+                else:
+                    logger.info("🌐 Usando Chromium (Desktop - visível)")
             
             # Instalar navegadores se necessário
             logger.info("📦 Verificando instalação dos navegadores...")
@@ -277,7 +281,6 @@ class SessionManager:
                             '--unsafely-disable-devtools-self-xss-warnings',
                             '--edge-skip-compat-layer-relaunch',
                             '--enable-automation',
-                            '--remote-debugging-pipe',
                             '--no-startup-window',
                             '--headless=new'
                         ]

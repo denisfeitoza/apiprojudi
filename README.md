@@ -13,6 +13,7 @@ API moderna e **100% funcional** para extração de dados do sistema PROJUDI usa
 
 ### 📊 **Extração Inteligente**
 - ✅ **Partes envolvidas**: Filtro inteligente (nomes vs endereços)
+- ✅ **Partes detalhadas** ⭐ **NOVO**: Extração opcional via navegação específica
 - ✅ **Movimentações**: Configurável (X últimas movimentações)
 - ✅ **Anexos**: Detecção e download automático
 - ✅ **Dados básicos**: Classe, assunto, valores, datas
@@ -379,6 +380,7 @@ POST /buscar-multiplo
 | `limite_movimentacoes` | integer | ❌ | `null` | Limitar número de movimentações |
 | `extrair_anexos` | boolean | ❌ | `false` | Extrair anexos (Nível 3) |
 | `extrair_partes` | boolean | ❌ | `true` | Extrair partes envolvidas |
+| `extrair_partes_detalhadas` | boolean | ❌ | `false` | ⭐ **NOVO**: Extração opcional de partes via navegação detalhada |
 | `usuario` | string | ❌ | `.env` | Usuário PROJUDI customizado |
 | `senha` | string | ❌ | `.env` | Senha PROJUDI customizada |
 | `serventia` | string | ❌ | `.env` | Serventia customizada |
@@ -497,6 +499,41 @@ POST /buscar-multiplo
   "erro": "Falha no login: credenciais inválidas"
 }
 ```
+
+## ⭐ **NOVA FUNCIONALIDADE: EXTRAÇÃO DE PARTES DETALHADAS**
+
+### 🧩 **Extração Opcional de Partes (`extrair_partes_detalhadas`)**
+
+A API v4 agora inclui um **novo modo de extração de partes** mais preciso e detalhado:
+
+#### **🔧 Como Funciona:**
+- **Navegação específica**: `ProcessoParte?PaginaAtual=6` → espera 1s → `ProcessoParte?PaginaAtual=2`
+- **Extração via botões**: Clica em "Editar" para cada parte em cada polo
+- **Dados completos**: Nome, documento, endereço, telefone, advogado, OAB
+- **Execução no final**: Só executa após extração básica e movimentações
+
+#### **📊 Performance:**
+- **COM extração detalhada**: ~2min para 2 processos com partes completas
+- **SEM extração detalhada**: ~27s para 2 processos (5x mais rápido)
+
+#### **🎯 Exemplo de Uso:**
+```json
+POST /buscar
+{
+  "tipo_busca": "processo",
+  "valor": "5479605-59.2020.8.09.0051",
+  "movimentacoes": true,
+  "extrair_partes": true,
+  "extrair_partes_detalhadas": true  // ⭐ NOVO
+}
+```
+
+#### **✅ Validado com:**
+- **Processo direto**: `5479605-59.2020.8.09.0051` → 3 partes (1 ativo + 2 passivo)
+- **CPF**: `084.036.781-34` → 13 partes (2 processos)
+- **Nome**: `PAULO ANTONIO MENEGAZZO` → 13 partes (2 processos)
+
+---
 
 ## 🎯 **TIPOS DE BUSCA SUPORTADOS**
 

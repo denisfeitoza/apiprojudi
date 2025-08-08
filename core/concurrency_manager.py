@@ -10,7 +10,7 @@ from loguru import logger
 from config import settings
 
 class ConcurrencyManager:
-    """Gerenciador de concorrência e rate limiting"""
+    """Gerenciador de concorrência e rate limiting com sistema de fila"""
     
     def __init__(self):
         self.max_concurrent = settings.max_concurrent_requests
@@ -19,6 +19,8 @@ class ConcurrencyManager:
         self.active_requests = 0
         self.total_requests = 0
         self.failed_requests = 0
+        self.queued_requests = 0
+        self.queue = asyncio.Queue()  # Fila para requests quando limite excedido
         
     async def execute_with_limits(
         self, 
@@ -26,9 +28,20 @@ class ConcurrencyManager:
         *args, 
         **kwargs
     ) -> Any:
-        """Executa função com limites de concorrência e timeout"""
+        """Executa função com limites de concorrência, timeout e sistema de fila"""
         
+        # O semáforo já gerencia a fila automaticamente
+        # Apenas adicionamos logging para ver a fila em ação
+        if self.active_requests >= self.max_concurrent:
+            self.queued_requests += 1
+            logger.info(f"🚦 Request entrando na fila. Fila atual: {self.queued_requests}")
+            
         async with self.semaphore:
+            # Se estava na fila, remover da contagem
+            if self.queued_requests > 0:
+                self.queued_requests -= 1
+                logger.info(f"🚀 Request saiu da fila. Fila atual: {self.queued_requests}")
+            
             self.active_requests += 1
             self.total_requests += 1
             
@@ -66,6 +79,7 @@ class ConcurrencyManager:
         return {
             "max_concurrent": self.max_concurrent,
             "active_requests": self.active_requests,
+            "queued_requests": self.queued_requests,
             "total_requests": self.total_requests,
             "failed_requests": self.failed_requests,
             "success_rate": (

@@ -8690,3 +8690,550 @@
 2025-08-05 03:02:25 | INFO | core.session_manager:shutdown:107 | ✅ SessionManager finalizado
 2025-08-05 03:02:25 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
 2025-08-05 03:02:25 | INFO | api.main:lifespan:47 | ✅ API finalizada
+2025-08-08 00:51:32 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 00:51:32 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=False
+2025-08-08 00:51:32 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=5
+2025-08-08 00:51:36 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 00:51:36 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 00:51:38 | INFO | core.session_manager:initialize:60 | 🌐 Usando Chromium (Desktop - visível)
+2025-08-08 00:51:38 | INFO | core.session_manager:initialize:63 | 📦 Verificando instalação dos navegadores...
+2025-08-08 00:51:38 | INFO | core.cache_manager:initialize:24 | 🚫 Cache Redis desabilitado nas configurações
+2025-08-08 00:51:38 | INFO | core.session_manager:initialize:72 | ✅ SessionManager inicializado com sucesso
+2025-08-08 00:51:38 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 00:51:47 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca e43fa689-8d43-4c76-a9cd-045aeeac29a8: processo = 0508844-37.2007.8.09.0024
+2025-08-08 00:51:47 | INFO | core.session_manager:_create_session:207 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 00:51:53 | ERROR | core.session_manager:_create_session:325 | ❌ Tentativa 1/3 falhou: Target page, context or browser has been closed
+2025-08-08 00:51:55 | INFO | core.session_manager:_create_session:207 | 🔄 Tentativa 2/3 de criar sessão...
+2025-08-08 00:52:00 | ERROR | core.session_manager:_create_session:325 | ❌ Tentativa 2/3 falhou: unable to perform operation on <WriteUnixTransport closed=True reading=False 0x1101a7ac0>; the handler is closed
+2025-08-08 00:52:02 | INFO | core.session_manager:_create_session:207 | 🔄 Tentativa 3/3 de criar sessão...
+2025-08-08 00:52:12 | ERROR | core.session_manager:_create_session:325 | ❌ Tentativa 3/3 falhou: unable to perform operation on <WriteUnixTransport closed=True reading=False 0x1101a7ac0>; the handler is closed
+2025-08-08 00:52:12 | ERROR | core.session_manager:_create_session:327 | ❌ Falha final ao criar sessão após 3 tentativas
+2025-08-08 00:52:14 | WARNING | core.session_manager:_get_session_internal:139 | ⚠️ Pool de sessões cheio, aguarde...
+2025-08-08 00:52:14 | ERROR | api.main:processar_busca_completa:279 | ❌ Erro na busca e43fa689-8d43-4c76-a9cd-045aeeac29a8: Não foi possível obter uma sessão
+2025-08-08 00:52:27 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 00:52:27 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 00:52:27 | INFO | __main__:main:25 | 🎯 Playwright: Headless=True, Max Browsers=1
+2025-08-08 00:52:29 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 00:52:29 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 00:52:29 | INFO | core.session_manager:initialize:60 | 🌐 Usando Chromium (Desktop - visível)
+2025-08-08 00:52:29 | INFO | core.session_manager:initialize:63 | 📦 Verificando instalação dos navegadores...
+2025-08-08 00:52:29 | INFO | core.cache_manager:initialize:24 | 🚫 Cache Redis desabilitado nas configurações
+2025-08-08 00:52:29 | INFO | core.session_manager:initialize:72 | ✅ SessionManager inicializado com sucesso
+2025-08-08 00:52:29 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 00:52:46 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca e9c0cc39-c04e-4ab6-a3e8-d9d6dce125a3: processo = 0508844-37.2007.8.09.0024
+2025-08-08 00:52:46 | INFO | core.session_manager:_create_session:207 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 00:52:46 | ERROR | core.session_manager:_create_session:325 | ❌ Tentativa 1/3 falhou: Playwright manages remote debugging connection itself.
+2025-08-08 00:52:48 | INFO | core.session_manager:_create_session:207 | 🔄 Tentativa 2/3 de criar sessão...
+2025-08-08 00:52:53 | ERROR | core.session_manager:_create_session:325 | ❌ Tentativa 2/3 falhou: Playwright manages remote debugging connection itself.
+2025-08-08 00:52:55 | INFO | core.session_manager:_create_session:207 | 🔄 Tentativa 3/3 de criar sessão...
+2025-08-08 00:53:05 | ERROR | core.session_manager:_create_session:325 | ❌ Tentativa 3/3 falhou: Playwright manages remote debugging connection itself.
+2025-08-08 00:53:05 | ERROR | core.session_manager:_create_session:327 | ❌ Falha final ao criar sessão após 3 tentativas
+2025-08-08 00:53:07 | WARNING | core.session_manager:_get_session_internal:139 | ⚠️ Pool de sessões cheio, aguarde...
+2025-08-08 00:53:07 | ERROR | api.main:processar_busca_completa:279 | ❌ Erro na busca e9c0cc39-c04e-4ab6-a3e8-d9d6dce125a3: Não foi possível obter uma sessão
+2025-08-08 00:54:56 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 00:54:56 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 00:54:56 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 00:56:32 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 00:56:32 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 00:56:32 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 00:57:14 | INFO | api.main:limpar_requisicao_ativa:763 | 🧹 Requisição e43fa689-8d43-4c76-a9cd-045aeeac29a8 removida da lista ativa
+2025-08-08 00:57:15 | INFO | api.main:lifespan:44 | 🔄 Finalizando PROJUDI API v4...
+2025-08-08 00:57:15 | INFO | core.session_manager:shutdown:81 | 🔄 Finalizando SessionManager...
+2025-08-08 00:57:15 | INFO | core.session_manager:close_all_sessions:201 | 🧹 Todas as 0 sessões foram fechadas
+2025-08-08 00:57:15 | INFO | core.session_manager:shutdown:101 | ✅ SessionManager finalizado
+2025-08-08 00:57:15 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
+2025-08-08 00:57:15 | INFO | api.main:lifespan:47 | ✅ API finalizada
+2025-08-08 00:58:07 | INFO | api.main:limpar_requisicao_ativa:763 | 🧹 Requisição e9c0cc39-c04e-4ab6-a3e8-d9d6dce125a3 removida da lista ativa
+2025-08-08 00:58:07 | INFO | api.main:lifespan:44 | 🔄 Finalizando PROJUDI API v4...
+2025-08-08 00:58:07 | INFO | core.session_manager:shutdown:81 | 🔄 Finalizando SessionManager...
+2025-08-08 00:58:07 | INFO | core.session_manager:close_all_sessions:201 | 🧹 Todas as 0 sessões foram fechadas
+2025-08-08 00:58:07 | INFO | core.session_manager:shutdown:101 | ✅ SessionManager finalizado
+2025-08-08 00:58:07 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
+2025-08-08 00:58:07 | INFO | api.main:lifespan:47 | ✅ API finalizada
+2025-08-08 00:59:54 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 00:59:54 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 00:59:54 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 00:59:56 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 00:59:56 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 00:59:56 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 00:59:56 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 00:59:56 | INFO | core.cache_manager:initialize:24 | 🚫 Cache Redis desabilitado nas configurações
+2025-08-08 00:59:56 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 00:59:56 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:00:15 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 9d47eb8c-fef0-4687-91e9-089d6d6f90c2: processo = 0508844-37.2007.8.09.0024
+2025-08-08 01:00:15 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:00:22 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 21866211-583c-4d50-914e-c2110a68b51c
+2025-08-08 01:00:22 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 21866211-583c-4d50-914e-c2110a68b51c
+2025-08-08 01:00:22 | INFO | api.main:processar_busca_completa:104 | 🔍 Busca por processo específico detectada: 0508844-37.2007.8.09.0024
+2025-08-08 01:00:22 | INFO | nivel_2.processo:buscar_processo_especifico:231 | 🔍 Buscando processo específico: 0508844-37.2007.8.09.0024
+2025-08-08 01:00:22 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão 21866211-583c-4d50-914e-c2110a68b51c...
+2025-08-08 01:00:34 | INFO | nivel_1.busca:_selecionar_serventia:140 | ✅ Serventia selecionada: Advogados - OAB/Matrícula: 25348-N-GO
+2025-08-08 01:00:34 | INFO | nivel_1.busca:fazer_login:93 | ✅ Login realizado com sucesso na sessão 21866211-583c-4d50-914e-c2110a68b51c
+2025-08-08 01:00:40 | INFO | nivel_2.processo:buscar_processo_especifico:255 | ✅ Processo 0508844-37.2007.8.09.0024 encontrado diretamente
+2025-08-08 01:00:40 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 0508844-37.2007.8.09.0024
+2025-08-08 01:00:40 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:00:40 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:00:40 | INFO | nivel_2.processo:_extrair_movimentacoes:392 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-08 01:00:40 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:501 | ✅ 71 movimentações extraídas da tabela
+2025-08-08 01:00:40 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 71
+2025-08-08 01:00:40 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 71 movimentações extraídas com sucesso
+2025-08-08 01:00:40 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 71 movimentações
+2025-08-08 01:00:40 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 21866211-583c-4d50-914e-c2110a68b51c
+2025-08-08 01:00:41 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 21866211-583c-4d50-914e-c2110a68b51c
+2025-08-08 01:03:58 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:03:58 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:03:58 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 01:04:00 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 01:04:00 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 01:04:00 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 01:04:00 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 01:04:00 | INFO | core.cache_manager:initialize:24 | 🚫 Cache Redis desabilitado nas configurações
+2025-08-08 01:04:00 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 01:04:00 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:04:20 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 667a29ac-f987-4a03-8a2d-39c29fb5c751: cpf = 084.036.781-34
+2025-08-08 01:04:20 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:04:30 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 6d17e6c3-3b93-43e6-b37f-801f6bbb746c
+2025-08-08 01:04:30 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 6d17e6c3-3b93-43e6-b37f-801f6bbb746c
+2025-08-08 01:04:30 | INFO | nivel_1.busca:executar_busca:250 | 🔐 Fazendo login antes da busca cpf...
+2025-08-08 01:04:30 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão 6d17e6c3-3b93-43e6-b37f-801f6bbb746c...
+2025-08-08 01:04:44 | INFO | nivel_1.busca:_selecionar_serventia:140 | ✅ Serventia selecionada: Advogados - OAB/Matrícula: 25348-N-GO
+2025-08-08 01:04:44 | INFO | nivel_1.busca:fazer_login:93 | ✅ Login realizado com sucesso na sessão 6d17e6c3-3b93-43e6-b37f-801f6bbb746c
+2025-08-08 01:04:46 | INFO | nivel_1.busca:executar_busca:266 | ✅ Página de busca acessada: https://projudi.tjgo.jus.br/BuscaProcesso
+2025-08-08 01:04:46 | INFO | nivel_1.busca:_buscar_por_cpf:328 | 🔍 Buscando por CPF: 084.036.781-34
+2025-08-08 01:04:48 | INFO | nivel_1.busca:_buscar_por_cpf:341 | ✅ Busca por CPF executada
+2025-08-08 01:04:49 | INFO | nivel_1.busca:_extrair_processos_encontrados:472 | ✅ Processo extraído: 508844-37
+2025-08-08 01:04:49 | INFO | nivel_1.busca:_extrair_processos_encontrados:472 | ✅ Processo extraído: 5479605-59
+2025-08-08 01:04:49 | INFO | nivel_1.busca:_extrair_processos_encontrados:478 | ✅ 2 processos extraídos
+2025-08-08 01:04:49 | INFO | api.main:processar_busca_completa:193 | 📄 Processando processo 1/2: 508844-37
+2025-08-08 01:04:49 | INFO | nivel_2.processo:acessar_processo:102 | 📄 Acessando processo 508844-37 (ID: 611564937875166873961063799)
+2025-08-08 01:04:49 | INFO | nivel_2.processo:acessar_processo:116 | 🔍 Analisando 2 linhas da tabela
+2025-08-08 01:04:49 | INFO | nivel_2.processo:acessar_processo:131 | 🎯 Processo encontrado na linha 1, clicando no botão...
+2025-08-08 01:04:51 | INFO | nivel_2.processo:acessar_processo:134 | ✅ Processo 508844-37 acessado via busca na tabela
+2025-08-08 01:04:51 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 508844-37
+2025-08-08 01:04:51 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:04:51 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:04:51 | INFO | nivel_2.processo:_extrair_movimentacoes:392 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-08 01:04:51 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:501 | ✅ 71 movimentações extraídas da tabela
+2025-08-08 01:04:51 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 71
+2025-08-08 01:04:51 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 71 movimentações extraídas com sucesso
+2025-08-08 01:04:51 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 71 movimentações
+2025-08-08 01:04:51 | INFO | api.main:processar_busca_completa:193 | 📄 Processando processo 2/2: 5479605-59
+2025-08-08 01:04:52 | INFO | nivel_1.busca:_buscar_por_cpf:328 | 🔍 Buscando por CPF: 084.036.781-34
+2025-08-08 01:04:54 | INFO | nivel_1.busca:_buscar_por_cpf:341 | ✅ Busca por CPF executada
+2025-08-08 01:04:56 | INFO | nivel_2.processo:acessar_processo:102 | 📄 Acessando processo 5479605-59 (ID: 611064907875166873964742040)
+2025-08-08 01:04:56 | INFO | nivel_2.processo:acessar_processo:116 | 🔍 Analisando 2 linhas da tabela
+2025-08-08 01:04:56 | INFO | nivel_2.processo:acessar_processo:131 | 🎯 Processo encontrado na linha 2, clicando no botão...
+2025-08-08 01:04:58 | INFO | nivel_2.processo:acessar_processo:134 | ✅ Processo 5479605-59 acessado via busca na tabela
+2025-08-08 01:04:58 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 5479605-59
+2025-08-08 01:04:58 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:04:58 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:04:58 | INFO | nivel_2.processo:_extrair_movimentacoes:392 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-08 01:04:58 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:501 | ✅ 53 movimentações extraídas da tabela
+2025-08-08 01:04:58 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 53
+2025-08-08 01:04:58 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 53 movimentações extraídas com sucesso
+2025-08-08 01:04:58 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 53 movimentações
+2025-08-08 01:04:58 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 667a29ac-f987-4a03-8a2d-39c29fb5c751 concluída em 38.32s
+2025-08-08 01:04:58 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 6d17e6c3-3b93-43e6-b37f-801f6bbb746c
+2025-08-08 01:04:59 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 6d17e6c3-3b93-43e6-b37f-801f6bbb746c
+2025-08-08 01:07:41 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:07:41 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:07:41 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 01:08:58 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:08:58 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:08:58 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 01:09:45 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:09:45 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:09:45 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 01:09:56 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:09:56 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:09:56 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 01:09:59 | INFO | api.main:limpar_requisicao_ativa:763 | 🧹 Requisição 667a29ac-f987-4a03-8a2d-39c29fb5c751 removida da lista ativa
+2025-08-08 01:09:59 | INFO | api.main:lifespan:44 | 🔄 Finalizando PROJUDI API v4...
+2025-08-08 01:09:59 | INFO | core.session_manager:shutdown:85 | 🔄 Finalizando SessionManager...
+2025-08-08 01:09:59 | INFO | core.session_manager:close_all_sessions:205 | 🧹 Todas as 0 sessões foram fechadas
+2025-08-08 01:10:00 | INFO | core.session_manager:shutdown:105 | ✅ SessionManager finalizado
+2025-08-08 01:10:00 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
+2025-08-08 01:10:00 | INFO | api.main:lifespan:47 | ✅ API finalizada
+2025-08-08 01:10:07 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 01:10:07 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 01:10:09 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 01:10:09 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 01:10:09 | INFO | core.cache_manager:initialize:24 | 🚫 Cache Redis desabilitado nas configurações
+2025-08-08 01:10:09 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 01:10:09 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:11:09 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:11:09 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:11:09 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=1
+2025-08-08 01:11:13 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 01:11:13 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 01:11:14 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 01:11:14 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 01:11:14 | INFO | core.cache_manager:initialize:24 | 🚫 Cache Redis desabilitado nas configurações
+2025-08-08 01:11:14 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 01:11:14 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:11:29 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 81d82205-0ecc-4f8c-b016-1fb42e9752f9: cpf = 084.036.781-34
+2025-08-08 01:11:29 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:11:40 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: fad28c1c-b702-47dc-93ff-6e7c631c577f
+2025-08-08 01:11:40 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: fad28c1c-b702-47dc-93ff-6e7c631c577f
+2025-08-08 01:11:40 | INFO | nivel_1.busca:executar_busca:250 | 🔐 Fazendo login antes da busca cpf...
+2025-08-08 01:11:40 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão fad28c1c-b702-47dc-93ff-6e7c631c577f...
+2025-08-08 01:11:55 | INFO | nivel_1.busca:_selecionar_serventia:140 | ✅ Serventia selecionada: Advogados - OAB/Matrícula: 25348-N-GO
+2025-08-08 01:11:55 | INFO | nivel_1.busca:fazer_login:93 | ✅ Login realizado com sucesso na sessão fad28c1c-b702-47dc-93ff-6e7c631c577f
+2025-08-08 01:11:57 | INFO | nivel_1.busca:executar_busca:266 | ✅ Página de busca acessada: https://projudi.tjgo.jus.br/BuscaProcesso
+2025-08-08 01:11:57 | INFO | nivel_1.busca:_buscar_por_cpf:328 | 🔍 Buscando por CPF: 084.036.781-34
+2025-08-08 01:11:59 | INFO | nivel_1.busca:_buscar_por_cpf:341 | ✅ Busca por CPF executada
+2025-08-08 01:12:00 | INFO | nivel_1.busca:_extrair_processos_encontrados:472 | ✅ Processo extraído: 508844-37
+2025-08-08 01:12:00 | INFO | nivel_1.busca:_extrair_processos_encontrados:472 | ✅ Processo extraído: 5479605-59
+2025-08-08 01:12:00 | INFO | nivel_1.busca:_extrair_processos_encontrados:478 | ✅ 2 processos extraídos
+2025-08-08 01:12:00 | INFO | api.main:processar_busca_completa:193 | 📄 Processando processo 1/2: 508844-37
+2025-08-08 01:12:00 | INFO | nivel_2.processo:acessar_processo:102 | 📄 Acessando processo 508844-37 (ID: 611464982381317873961063799)
+2025-08-08 01:12:00 | INFO | nivel_2.processo:acessar_processo:116 | 🔍 Analisando 2 linhas da tabela
+2025-08-08 01:12:00 | INFO | nivel_2.processo:acessar_processo:131 | 🎯 Processo encontrado na linha 1, clicando no botão...
+2025-08-08 01:12:01 | INFO | nivel_2.processo:acessar_processo:134 | ✅ Processo 508844-37 acessado via busca na tabela
+2025-08-08 01:12:01 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 508844-37
+2025-08-08 01:12:02 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:12:02 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:12:02 | INFO | nivel_2.processo:_extrair_movimentacoes:392 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-08 01:12:02 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:501 | ✅ 71 movimentações extraídas da tabela
+2025-08-08 01:12:02 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 71
+2025-08-08 01:12:02 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 71 movimentações extraídas com sucesso
+2025-08-08 01:12:02 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 71 movimentações
+2025-08-08 01:12:02 | INFO | api.main:processar_busca_completa:193 | 📄 Processando processo 2/2: 5479605-59
+2025-08-08 01:12:03 | INFO | nivel_1.busca:_buscar_por_cpf:328 | 🔍 Buscando por CPF: 084.036.781-34
+2025-08-08 01:12:06 | INFO | nivel_1.busca:_buscar_por_cpf:341 | ✅ Busca por CPF executada
+2025-08-08 01:12:08 | INFO | nivel_2.processo:acessar_processo:102 | 📄 Acessando processo 5479605-59 (ID: 611964962381317873964742040)
+2025-08-08 01:12:08 | INFO | nivel_2.processo:acessar_processo:116 | 🔍 Analisando 2 linhas da tabela
+2025-08-08 01:12:08 | INFO | nivel_2.processo:acessar_processo:131 | 🎯 Processo encontrado na linha 2, clicando no botão...
+2025-08-08 01:12:10 | INFO | nivel_2.processo:acessar_processo:134 | ✅ Processo 5479605-59 acessado via busca na tabela
+2025-08-08 01:12:10 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 5479605-59
+2025-08-08 01:12:10 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:12:10 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:12:10 | INFO | nivel_2.processo:_extrair_movimentacoes:392 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-08 01:12:10 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:501 | ✅ 53 movimentações extraídas da tabela
+2025-08-08 01:12:10 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 53
+2025-08-08 01:12:10 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 53 movimentações extraídas com sucesso
+2025-08-08 01:12:10 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 53 movimentações
+2025-08-08 01:12:10 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 81d82205-0ecc-4f8c-b016-1fb42e9752f9 concluída em 41.21s
+2025-08-08 01:12:10 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: fad28c1c-b702-47dc-93ff-6e7c631c577f
+2025-08-08 01:12:10 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: fad28c1c-b702-47dc-93ff-6e7c631c577f
+2025-08-08 01:12:18 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca d94b4ce6-da75-426d-a360-30f928e17999: processo = 0508844-37.2007.8.09.0024
+2025-08-08 01:12:18 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:12:35 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 4377c128-7bc6-4465-97e8-357b7b67ed05
+2025-08-08 01:12:35 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 4377c128-7bc6-4465-97e8-357b7b67ed05
+2025-08-08 01:12:35 | INFO | api.main:processar_busca_completa:104 | 🔍 Busca por processo específico detectada: 0508844-37.2007.8.09.0024
+2025-08-08 01:12:35 | INFO | nivel_2.processo:buscar_processo_especifico:231 | 🔍 Buscando processo específico: 0508844-37.2007.8.09.0024
+2025-08-08 01:12:35 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão 4377c128-7bc6-4465-97e8-357b7b67ed05...
+2025-08-08 01:12:49 | INFO | nivel_1.busca:_selecionar_serventia:140 | ✅ Serventia selecionada: Advogados - OAB/Matrícula: 25348-N-GO
+2025-08-08 01:12:49 | INFO | nivel_1.busca:fazer_login:93 | ✅ Login realizado com sucesso na sessão 4377c128-7bc6-4465-97e8-357b7b67ed05
+2025-08-08 01:12:55 | INFO | nivel_2.processo:buscar_processo_especifico:255 | ✅ Processo 0508844-37.2007.8.09.0024 encontrado diretamente
+2025-08-08 01:12:55 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 0508844-37.2007.8.09.0024
+2025-08-08 01:12:56 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:12:56 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:12:56 | INFO | nivel_2.processo:_extrair_movimentacoes:392 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-08 01:12:56 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:501 | ✅ 71 movimentações extraídas da tabela
+2025-08-08 01:12:56 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 71
+2025-08-08 01:12:56 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 71 movimentações extraídas com sucesso
+2025-08-08 01:12:56 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 71 movimentações
+2025-08-08 01:12:56 | INFO | api.main:processar_busca_completa:117 | 🧩 Executando extração de partes detalhada (opcional) no final do fluxo...
+2025-08-08 01:12:56 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1410 | 🚀 Extração detalhada de partes iniciada
+2025-08-08 01:13:08 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1434 | ✅ 1 partes extraídas em polo_ativo (detalhado)
+2025-08-08 01:14:11 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1434 | ✅ 9 partes extraídas em polo_passivo (detalhado)
+2025-08-08 01:14:19 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1434 | ✅ 0 partes extraídas em outros (detalhado)
+2025-08-08 01:14:19 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1437 | 🎯 Extração detalhada concluída: 10 partes
+2025-08-08 01:14:19 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 4377c128-7bc6-4465-97e8-357b7b67ed05
+2025-08-08 01:14:20 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 4377c128-7bc6-4465-97e8-357b7b67ed05
+2025-08-08 01:14:29 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca b8b41765-c676-4fb3-8bc2-7fbb3f86fadb: processo = 5539441-98.2023.8.09.0069
+2025-08-08 01:14:29 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:14:42 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 04ec37e8-33ce-4ee5-a1f9-06eddb60a896
+2025-08-08 01:14:42 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 04ec37e8-33ce-4ee5-a1f9-06eddb60a896
+2025-08-08 01:14:42 | INFO | api.main:processar_busca_completa:104 | 🔍 Busca por processo específico detectada: 5539441-98.2023.8.09.0069
+2025-08-08 01:14:42 | INFO | nivel_2.processo:buscar_processo_especifico:231 | 🔍 Buscando processo específico: 5539441-98.2023.8.09.0069
+2025-08-08 01:14:42 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão 04ec37e8-33ce-4ee5-a1f9-06eddb60a896...
+2025-08-08 01:14:57 | INFO | nivel_1.busca:_selecionar_serventia:140 | ✅ Serventia selecionada: Advogados - OAB/Matrícula: 25348-N-GO
+2025-08-08 01:14:57 | INFO | nivel_1.busca:fazer_login:93 | ✅ Login realizado com sucesso na sessão 04ec37e8-33ce-4ee5-a1f9-06eddb60a896
+2025-08-08 01:15:02 | INFO | nivel_2.processo:buscar_processo_especifico:255 | ✅ Processo 5539441-98.2023.8.09.0069 encontrado diretamente
+2025-08-08 01:15:02 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 5539441-98.2023.8.09.0069
+2025-08-08 01:15:02 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:15:02 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:15:03 | INFO | nivel_2.processo:_extrair_movimentacoes:397 | 🔍 Navegando para página de navegação de arquivos...
+2025-08-08 01:15:04 | INFO | nivel_2.processo:_extrair_movimentacoes:403 | ✅ Página de navegação carregada
+2025-08-08 01:15:04 | INFO | nivel_2.processo:_extrair_movimentacoes:408 | 🔍 Página de navegação HTML encontrada - extraindo movimentações...
+2025-08-08 01:15:04 | INFO | nivel_2.processo:_extrair_movimentacoes_navegacao_html:515 | 🔍 Extraindo movimentações da estrutura HTML de navegação
+2025-08-08 01:15:04 | INFO | nivel_2.processo:_extrair_movimentacoes_navegacao_html:578 | ✅ 67 movimentações extraídas da estrutura HTML
+2025-08-08 01:15:04 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 67
+2025-08-08 01:15:04 | INFO | nivel_2.processo:_extrair_movimentacoes:452 | ✂️ Limitado a 3 movimentações mais recentes
+2025-08-08 01:15:04 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 3 movimentações extraídas com sucesso
+2025-08-08 01:15:04 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 3 movimentações
+2025-08-08 01:15:04 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 04ec37e8-33ce-4ee5-a1f9-06eddb60a896
+2025-08-08 01:15:06 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 04ec37e8-33ce-4ee5-a1f9-06eddb60a896
+2025-08-08 01:16:08 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:16:08 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:16:08 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=5
+2025-08-08 01:16:44 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:16:44 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:16:44 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=5
+2025-08-08 01:16:46 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 01:16:46 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 01:16:47 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 01:16:47 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 01:16:47 | INFO | core.cache_manager:initialize:38 | ✅ Cache Redis conectado: redis://localhost:6379
+2025-08-08 01:16:47 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 01:16:47 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:17:03 | INFO | api.main:lifespan:44 | 🔄 Finalizando PROJUDI API v4...
+2025-08-08 01:17:03 | INFO | core.session_manager:shutdown:85 | 🔄 Finalizando SessionManager...
+2025-08-08 01:17:03 | INFO | core.session_manager:close_all_sessions:205 | 🧹 Todas as 0 sessões foram fechadas
+2025-08-08 01:17:03 | INFO | core.cache_manager:shutdown:51 | 🔄 Cache Redis desconectado
+2025-08-08 01:17:03 | INFO | core.session_manager:shutdown:105 | ✅ SessionManager finalizado
+2025-08-08 01:17:03 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
+2025-08-08 01:17:03 | INFO | api.main:lifespan:47 | ✅ API finalizada
+2025-08-08 01:17:09 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:17:09 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:17:09 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=5
+2025-08-08 01:17:11 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 01:17:11 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 01:17:12 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 01:17:12 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 01:17:12 | INFO | core.cache_manager:initialize:38 | ✅ Cache Redis conectado: redis://localhost:6379
+2025-08-08 01:17:12 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 01:17:12 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:17:15 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 32ed4470-7a38-495b-bd62-e8c9d46da8be: processo = 5539441-98.2023.8.09.0069
+2025-08-08 01:17:15 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:17:32 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 012d2a9f-e126-4be8-969e-b68286b91cb5
+2025-08-08 01:17:32 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 012d2a9f-e126-4be8-969e-b68286b91cb5
+2025-08-08 01:17:32 | INFO | api.main:processar_busca_completa:104 | 🔍 Busca por processo específico detectada: 5539441-98.2023.8.09.0069
+2025-08-08 01:17:32 | INFO | nivel_2.processo:buscar_processo_especifico:231 | 🔍 Buscando processo específico: 5539441-98.2023.8.09.0069
+2025-08-08 01:17:32 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão 012d2a9f-e126-4be8-969e-b68286b91cb5...
+2025-08-08 01:17:50 | INFO | nivel_1.busca:_selecionar_serventia:140 | ✅ Serventia selecionada: Advogados - OAB/Matrícula: 25348-N-GO
+2025-08-08 01:17:50 | INFO | nivel_1.busca:fazer_login:93 | ✅ Login realizado com sucesso na sessão 012d2a9f-e126-4be8-969e-b68286b91cb5
+2025-08-08 01:17:55 | INFO | nivel_2.processo:buscar_processo_especifico:255 | ✅ Processo 5539441-98.2023.8.09.0069 encontrado diretamente
+2025-08-08 01:17:55 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 5539441-98.2023.8.09.0069
+2025-08-08 01:17:55 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:17:55 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:17:55 | INFO | nivel_2.processo:_extrair_movimentacoes:397 | 🔍 Navegando para página de navegação de arquivos...
+2025-08-08 01:17:56 | INFO | nivel_2.processo:_extrair_movimentacoes:403 | ✅ Página de navegação carregada
+2025-08-08 01:17:56 | INFO | nivel_2.processo:_extrair_movimentacoes:408 | 🔍 Página de navegação HTML encontrada - extraindo movimentações...
+2025-08-08 01:17:56 | INFO | nivel_2.processo:_extrair_movimentacoes_navegacao_html:515 | 🔍 Extraindo movimentações da estrutura HTML de navegação
+2025-08-08 01:17:56 | INFO | nivel_2.processo:_extrair_movimentacoes_navegacao_html:578 | ✅ 67 movimentações extraídas da estrutura HTML
+2025-08-08 01:17:56 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 67
+2025-08-08 01:17:56 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 67 movimentações extraídas com sucesso
+2025-08-08 01:17:56 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 67 movimentações
+2025-08-08 01:17:56 | INFO | api.main:processar_busca_completa:117 | 🧩 Executando extração de partes detalhada (opcional) no final do fluxo...
+2025-08-08 01:17:56 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1410 | 🚀 Extração detalhada de partes iniciada
+2025-08-08 01:18:08 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1434 | ✅ 1 partes extraídas em polo_ativo (detalhado)
+2025-08-08 01:18:15 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1434 | ✅ 1 partes extraídas em polo_passivo (detalhado)
+2025-08-08 01:18:23 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1434 | ✅ 0 partes extraídas em outros (detalhado)
+2025-08-08 01:18:23 | INFO | nivel_2.processo:_extrair_partes_navegacao_detalhada:1437 | 🎯 Extração detalhada concluída: 2 partes
+2025-08-08 01:18:23 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 012d2a9f-e126-4be8-969e-b68286b91cb5
+2025-08-08 01:18:24 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 012d2a9f-e126-4be8-969e-b68286b91cb5
+2025-08-08 01:20:02 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:20:02 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:20:02 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=5
+2025-08-08 01:21:20 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:21:20 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:21:20 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=5
+2025-08-08 01:22:49 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:22:49 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:22:49 | INFO | __main__:main:25 | 🎯 Playwright: Headless=False, Max Browsers=5
+2025-08-08 01:22:51 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 01:22:51 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 01:22:51 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 01:22:51 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 01:22:51 | INFO | core.cache_manager:initialize:38 | ✅ Cache Redis conectado: redis://localhost:6379
+2025-08-08 01:22:51 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 01:22:51 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:23:23 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 2a2c0c4e-a508-446c-851c-79cf27202bfb: cpf = 084.036.781-34
+2025-08-08 01:23:23 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:23:24 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 1954490d-3300-48ad-a580-9f2945f8623c: cpf = 084.036.781-34
+2025-08-08 01:23:24 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca b46367cf-3f1b-462f-a187-ed12b3068604: cpf = 084.036.781-34
+2025-08-08 01:23:24 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca aa3bbe7f-c088-4b23-abce-c95328361321: cpf = 084.036.781-34
+2025-08-08 01:23:24 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 1fd04acf-84bf-46f6-8455-66cdcb246125: cpf = 084.036.781-34
+2025-08-08 01:23:24 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca c1f0ae14-199b-4be4-a9a7-6b763d2d2e22: cpf = 084.036.781-34
+2025-08-08 01:23:24 | INFO | core.concurrency_manager:execute_with_limits:37 | 🚦 Request entrando na fila. Fila atual: 1
+2025-08-08 01:23:24 | INFO | api.main:limpar_requisicao_ativa:763 | 🧹 Requisição 32ed4470-7a38-495b-bd62-e8c9d46da8be removida da lista ativa
+2025-08-08 01:23:24 | INFO | api.main:lifespan:44 | 🔄 Finalizando PROJUDI API v4...
+2025-08-08 01:23:24 | INFO | core.session_manager:shutdown:85 | 🔄 Finalizando SessionManager...
+2025-08-08 01:23:24 | INFO | core.session_manager:close_all_sessions:205 | 🧹 Todas as 0 sessões foram fechadas
+2025-08-08 01:23:24 | INFO | core.cache_manager:shutdown:51 | 🔄 Cache Redis desconectado
+2025-08-08 01:23:25 | INFO | core.session_manager:shutdown:105 | ✅ SessionManager finalizado
+2025-08-08 01:23:25 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
+2025-08-08 01:23:25 | INFO | api.main:lifespan:47 | ✅ API finalizada
+2025-08-08 01:23:35 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 5e79f3c0-9e47-4c57-965c-2c75d3be8472
+2025-08-08 01:23:35 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 5e79f3c0-9e47-4c57-965c-2c75d3be8472
+2025-08-08 01:23:35 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:23:35 | INFO | core.concurrency_manager:execute_with_limits:43 | 🚀 Request saiu da fila. Fila atual: 0
+2025-08-08 01:23:35 | INFO | nivel_1.busca:executar_busca:250 | 🔐 Fazendo login antes da busca cpf...
+2025-08-08 01:23:35 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão 5e79f3c0-9e47-4c57-965c-2c75d3be8472...
+2025-08-08 01:23:43 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: d262c7fd-2321-4b22-aa51-6f4da5217717
+2025-08-08 01:23:43 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: d262c7fd-2321-4b22-aa51-6f4da5217717
+2025-08-08 01:23:43 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:23:43 | INFO | nivel_1.busca:executar_busca:250 | 🔐 Fazendo login antes da busca cpf...
+2025-08-08 01:23:43 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão d262c7fd-2321-4b22-aa51-6f4da5217717...
+2025-08-08 01:23:55 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 47db765d-c8e7-40ea-bedc-805505eb6385
+2025-08-08 01:23:55 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 47db765d-c8e7-40ea-bedc-805505eb6385
+2025-08-08 01:23:55 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:23:55 | INFO | nivel_1.busca:executar_busca:250 | 🔐 Fazendo login antes da busca cpf...
+2025-08-08 01:23:55 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão 47db765d-c8e7-40ea-bedc-805505eb6385...
+2025-08-08 01:24:06 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: e01bb7f0-9c8c-4e59-ba48-246756a8ae69
+2025-08-08 01:24:06 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: e01bb7f0-9c8c-4e59-ba48-246756a8ae69
+2025-08-08 01:24:06 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:24:06 | INFO | nivel_1.busca:executar_busca:250 | 🔐 Fazendo login antes da busca cpf...
+2025-08-08 01:24:06 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão e01bb7f0-9c8c-4e59-ba48-246756a8ae69...
+2025-08-08 01:24:15 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 6cc966a7-da47-44ea-baf4-98d9540768e7
+2025-08-08 01:24:15 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 6cc966a7-da47-44ea-baf4-98d9540768e7
+2025-08-08 01:24:15 | WARNING | core.session_manager:_get_session_internal:143 | ⚠️ Pool de sessões cheio, aguarde...
+2025-08-08 01:24:15 | ERROR | api.main:processar_busca_completa:279 | ❌ Erro na busca c1f0ae14-199b-4be4-a9a7-6b763d2d2e22: Não foi possível obter uma sessão
+2025-08-08 01:24:16 | ERROR | nivel_1.busca:fazer_login:103 | ❌ Erro no login da sessão 5e79f3c0-9e47-4c57-965c-2c75d3be8472: Timeout 12000ms exceeded.
+2025-08-08 01:24:16 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 5e79f3c0-9e47-4c57-965c-2c75d3be8472
+2025-08-08 01:24:16 | INFO | nivel_1.busca:executar_busca:250 | 🔐 Fazendo login antes da busca cpf...
+2025-08-08 01:24:16 | INFO | nivel_1.busca:fazer_login:53 | 🔐 Fazendo login na sessão 6cc966a7-da47-44ea-baf4-98d9540768e7...
+2025-08-08 01:24:17 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 5e79f3c0-9e47-4c57-965c-2c75d3be8472
+2025-08-08 01:24:20 | ERROR | nivel_1.busca:fazer_login:103 | ❌ Erro no login da sessão 47db765d-c8e7-40ea-bedc-805505eb6385: Timeout 12000ms exceeded.
+2025-08-08 01:24:20 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 47db765d-c8e7-40ea-bedc-805505eb6385
+2025-08-08 01:24:22 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 47db765d-c8e7-40ea-bedc-805505eb6385
+2025-08-08 01:24:24 | ERROR | nivel_1.busca:fazer_login:103 | ❌ Erro no login da sessão d262c7fd-2321-4b22-aa51-6f4da5217717: Timeout 12000ms exceeded.
+2025-08-08 01:24:24 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: d262c7fd-2321-4b22-aa51-6f4da5217717
+2025-08-08 01:24:26 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: d262c7fd-2321-4b22-aa51-6f4da5217717
+2025-08-08 01:24:27 | ERROR | nivel_1.busca:fazer_login:103 | ❌ Erro no login da sessão e01bb7f0-9c8c-4e59-ba48-246756a8ae69: Timeout 12000ms exceeded.
+2025-08-08 01:24:27 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: e01bb7f0-9c8c-4e59-ba48-246756a8ae69
+2025-08-08 01:24:29 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: e01bb7f0-9c8c-4e59-ba48-246756a8ae69
+2025-08-08 01:24:31 | INFO | nivel_1.busca:_selecionar_serventia:140 | ✅ Serventia selecionada: Advogados - OAB/Matrícula: 25348-N-GO
+2025-08-08 01:24:31 | INFO | nivel_1.busca:fazer_login:93 | ✅ Login realizado com sucesso na sessão 6cc966a7-da47-44ea-baf4-98d9540768e7
+2025-08-08 01:24:32 | INFO | nivel_1.busca:executar_busca:266 | ✅ Página de busca acessada: https://projudi.tjgo.jus.br/BuscaProcesso
+2025-08-08 01:24:32 | INFO | nivel_1.busca:_buscar_por_cpf:328 | 🔍 Buscando por CPF: 084.036.781-34
+2025-08-08 01:24:36 | INFO | nivel_1.busca:_buscar_por_cpf:341 | ✅ Busca por CPF executada
+2025-08-08 01:24:38 | INFO | nivel_1.busca:_extrair_processos_encontrados:472 | ✅ Processo extraído: 508844-37
+2025-08-08 01:24:39 | INFO | nivel_1.busca:_extrair_processos_encontrados:472 | ✅ Processo extraído: 5479605-59
+2025-08-08 01:24:39 | INFO | nivel_1.busca:_extrair_processos_encontrados:478 | ✅ 2 processos extraídos
+2025-08-08 01:24:39 | INFO | api.main:processar_busca_completa:193 | 📄 Processando processo 1/2: 508844-37
+2025-08-08 01:24:39 | INFO | nivel_2.processo:acessar_processo:102 | 📄 Acessando processo 508844-37 (ID: 611864926400114873961063799)
+2025-08-08 01:24:39 | INFO | nivel_2.processo:acessar_processo:116 | 🔍 Analisando 2 linhas da tabela
+2025-08-08 01:24:39 | INFO | nivel_2.processo:acessar_processo:131 | 🎯 Processo encontrado na linha 1, clicando no botão...
+2025-08-08 01:24:42 | INFO | nivel_2.processo:acessar_processo:134 | ✅ Processo 508844-37 acessado via busca na tabela
+2025-08-08 01:24:42 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 508844-37
+2025-08-08 01:24:42 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:24:42 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:24:42 | INFO | nivel_2.processo:_extrair_movimentacoes:392 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-08 01:24:43 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:501 | ✅ 71 movimentações extraídas da tabela
+2025-08-08 01:24:43 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 71
+2025-08-08 01:24:43 | INFO | nivel_2.processo:_extrair_movimentacoes:452 | ✂️ Limitado a 3 movimentações mais recentes
+2025-08-08 01:24:43 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 3 movimentações extraídas com sucesso
+2025-08-08 01:24:43 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 3 movimentações
+2025-08-08 01:24:43 | INFO | api.main:processar_busca_completa:193 | 📄 Processando processo 2/2: 5479605-59
+2025-08-08 01:24:44 | INFO | nivel_1.busca:_buscar_por_cpf:328 | 🔍 Buscando por CPF: 084.036.781-34
+2025-08-08 01:24:47 | INFO | nivel_1.busca:_buscar_por_cpf:341 | ✅ Busca por CPF executada
+2025-08-08 01:24:49 | INFO | nivel_2.processo:acessar_processo:102 | 📄 Acessando processo 5479605-59 (ID: 611264906400114873964742040)
+2025-08-08 01:24:49 | INFO | nivel_2.processo:acessar_processo:116 | 🔍 Analisando 2 linhas da tabela
+2025-08-08 01:24:49 | INFO | nivel_2.processo:acessar_processo:131 | 🎯 Processo encontrado na linha 2, clicando no botão...
+2025-08-08 01:24:50 | INFO | nivel_2.processo:acessar_processo:134 | ✅ Processo 5479605-59 acessado via busca na tabela
+2025-08-08 01:24:50 | INFO | nivel_2.processo:extrair_dados_processo:280 | 📋 Extraindo dados do processo 5479605-59
+2025-08-08 01:24:50 | INFO | nivel_2.processo:_extrair_movimentacoes:383 | 📋 Extraindo movimentações - navegando para página de arquivos...
+2025-08-08 01:24:50 | INFO | nivel_2.processo:_extrair_movimentacoes:388 | 🔍 Tentando extrair movimentações da página atual...
+2025-08-08 01:24:50 | INFO | nivel_2.processo:_extrair_movimentacoes:392 | 🔍 TabelaArquivos encontrada na página atual
+2025-08-08 01:24:50 | INFO | nivel_2.processo:_extrair_movimentacoes_tabela_arquivos_inteligente:501 | ✅ 53 movimentações extraídas da tabela
+2025-08-08 01:24:50 | INFO | nivel_2.processo:_extrair_movimentacoes:447 | 📊 Total de movimentações encontradas: 53
+2025-08-08 01:24:50 | INFO | nivel_2.processo:_extrair_movimentacoes:452 | ✂️ Limitado a 3 movimentações mais recentes
+2025-08-08 01:24:50 | INFO | nivel_2.processo:_extrair_movimentacoes:454 | ✅ 3 movimentações extraídas com sucesso
+2025-08-08 01:24:50 | INFO | nivel_2.processo:extrair_dados_processo:309 | ✅ Dados extraídos: 3 movimentações
+2025-08-08 01:24:50 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 1fd04acf-84bf-46f6-8455-66cdcb246125 concluída em 86.58s
+2025-08-08 01:24:50 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 6cc966a7-da47-44ea-baf4-98d9540768e7
+2025-08-08 01:24:51 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 6cc966a7-da47-44ea-baf4-98d9540768e7
+2025-08-08 01:26:22 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 1d78e93c-aaea-4b72-811a-ec48e8b55af2: cpf = 084.036.781-34
+2025-08-08 01:26:22 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:26:22 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 58aa5b3b-bfaf-445b-8500-a54feb412063: cpf = 084.036.781-34
+2025-08-08 01:26:22 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca bb2cdc04-9cb3-47b7-a2c4-2bf588d4adb0: cpf = 084.036.781-34
+2025-08-08 01:26:24 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca f0f27089-8761-4d1c-ad00-f42e91542b20: cpf = 084.036.781-34
+2025-08-08 01:26:24 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 57301a9c-c061-4145-a09d-6b250a9855c0: cpf = 084.036.781-34
+2025-08-08 01:26:24 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca e7bc928d-b1ec-48a8-a2de-2c80ad8d0cd8: cpf = 084.036.781-34
+2025-08-08 01:26:24 | INFO | core.concurrency_manager:execute_with_limits:37 | 🚦 Request entrando na fila. Fila atual: 1
+2025-08-08 01:26:29 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: e365a741-e1ee-46df-9d3f-095ab2d486ad
+2025-08-08 01:26:29 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: e365a741-e1ee-46df-9d3f-095ab2d486ad
+2025-08-08 01:26:29 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:26:29 | INFO | core.concurrency_manager:execute_with_limits:43 | 🚀 Request saiu da fila. Fila atual: 0
+2025-08-08 01:26:29 | INFO | nivel_1.busca:executar_busca:224 | ✅ Resultado em cache para busca cpf = 084.036.781-34
+2025-08-08 01:26:29 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 1d78e93c-aaea-4b72-811a-ec48e8b55af2 concluída em 7.08s
+2025-08-08 01:26:29 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: e365a741-e1ee-46df-9d3f-095ab2d486ad
+2025-08-08 01:26:31 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: e365a741-e1ee-46df-9d3f-095ab2d486ad
+2025-08-08 01:26:33 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 5aabeeba-c46a-496b-851a-ddf18292c09a
+2025-08-08 01:26:33 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 5aabeeba-c46a-496b-851a-ddf18292c09a
+2025-08-08 01:26:33 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:26:33 | INFO | nivel_1.busca:executar_busca:224 | ✅ Resultado em cache para busca cpf = 084.036.781-34
+2025-08-08 01:26:33 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 58aa5b3b-bfaf-445b-8500-a54feb412063 concluída em 11.23s
+2025-08-08 01:26:33 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 5aabeeba-c46a-496b-851a-ddf18292c09a
+2025-08-08 01:26:35 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 5aabeeba-c46a-496b-851a-ddf18292c09a
+2025-08-08 01:27:52 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:27:52 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:27:52 | INFO | __main__:main:25 | 🎯 Playwright: Headless=True, Max Browsers=5
+2025-08-08 01:27:53 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 01:27:53 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 01:27:53 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 01:27:53 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 01:27:53 | INFO | core.cache_manager:initialize:38 | ✅ Cache Redis conectado: redis://localhost:6379
+2025-08-08 01:27:53 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 01:27:53 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:28:14 | INFO | api.main:lifespan:44 | 🔄 Finalizando PROJUDI API v4...
+2025-08-08 01:28:14 | INFO | core.session_manager:shutdown:85 | 🔄 Finalizando SessionManager...
+2025-08-08 01:28:14 | INFO | core.session_manager:close_all_sessions:205 | 🧹 Todas as 0 sessões foram fechadas
+2025-08-08 01:28:14 | INFO | core.cache_manager:shutdown:51 | 🔄 Cache Redis desconectado
+2025-08-08 01:28:14 | INFO | core.session_manager:shutdown:105 | ✅ SessionManager finalizado
+2025-08-08 01:28:14 | INFO | nivel_3.anexos:limpar_arquivos_temporarios:511 | 🧹 Arquivos temporários limpos
+2025-08-08 01:28:14 | INFO | api.main:lifespan:47 | ✅ API finalizada
+2025-08-08 01:28:18 | INFO | __main__:main:23 | 🚀 Iniciando PROJUDI API v4
+2025-08-08 01:28:18 | INFO | __main__:main:24 | 🔧 Configurações: Host=0.0.0.0, Port=8081, Debug=True
+2025-08-08 01:28:18 | INFO | __main__:main:25 | 🎯 Playwright: Headless=True, Max Browsers=5
+2025-08-08 01:28:18 | INFO | api.main:lifespan:37 | 🚀 Iniciando PROJUDI API v4...
+2025-08-08 01:28:18 | INFO | core.session_manager:initialize:49 | 🚀 Inicializando Playwright...
+2025-08-08 01:28:19 | INFO | core.session_manager:initialize:58 | 🌐 Usando Firefox (macOS - visível)
+2025-08-08 01:28:19 | INFO | core.session_manager:initialize:67 | 📦 Verificando instalação dos navegadores...
+2025-08-08 01:28:19 | INFO | core.cache_manager:initialize:38 | ✅ Cache Redis conectado: redis://localhost:6379
+2025-08-08 01:28:19 | INFO | core.session_manager:initialize:76 | ✅ SessionManager inicializado com sucesso
+2025-08-08 01:28:19 | INFO | api.main:lifespan:39 | ✅ API inicializada com sucesso
+2025-08-08 01:28:27 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 3ea5aa6e-cbf4-44a0-9b35-473ab3594402: cpf = 084.036.781-34
+2025-08-08 01:28:27 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:28:27 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 5eaa7c7f-ac32-4730-a32a-ba2b45898a07: cpf = 084.036.781-34
+2025-08-08 01:28:27 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 788cfcb1-3c1c-4ca9-afa1-cda469d8a32f: cpf = 084.036.781-34
+2025-08-08 01:28:29 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca f33512a7-7fe7-44eb-881f-8832f9e95253: cpf = 084.036.781-34
+2025-08-08 01:28:29 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 43b98d4d-c3d8-4e69-84d7-3c65d49614f0: cpf = 084.036.781-34
+2025-08-08 01:28:29 | INFO | api.main:processar_busca_completa:81 | 🔍 Processando busca 5a8ec668-4013-4de2-acbf-c03fe27e7191: cpf = 084.036.781-34
+2025-08-08 01:28:29 | INFO | core.concurrency_manager:execute_with_limits:37 | 🚦 Request entrando na fila. Fila atual: 1
+2025-08-08 01:28:33 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 5a0636b2-d4ff-43a4-8e27-82ffb3ca7877
+2025-08-08 01:28:33 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 5a0636b2-d4ff-43a4-8e27-82ffb3ca7877
+2025-08-08 01:28:33 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:28:33 | INFO | core.concurrency_manager:execute_with_limits:43 | 🚀 Request saiu da fila. Fila atual: 0
+2025-08-08 01:28:33 | INFO | nivel_1.busca:executar_busca:224 | ✅ Resultado em cache para busca cpf = 084.036.781-34
+2025-08-08 01:28:33 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 3ea5aa6e-cbf4-44a0-9b35-473ab3594402 concluída em 5.63s
+2025-08-08 01:28:33 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 5a0636b2-d4ff-43a4-8e27-82ffb3ca7877
+2025-08-08 01:28:37 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 5a0636b2-d4ff-43a4-8e27-82ffb3ca7877
+2025-08-08 01:28:40 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 36bf3000-9227-4df2-b527-57ddb11ff56d
+2025-08-08 01:28:40 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 36bf3000-9227-4df2-b527-57ddb11ff56d
+2025-08-08 01:28:40 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:28:40 | INFO | nivel_1.busca:executar_busca:224 | ✅ Resultado em cache para busca cpf = 084.036.781-34
+2025-08-08 01:28:40 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 5eaa7c7f-ac32-4730-a32a-ba2b45898a07 concluída em 12.94s
+2025-08-08 01:28:40 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 36bf3000-9227-4df2-b527-57ddb11ff56d
+2025-08-08 01:28:43 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 36bf3000-9227-4df2-b527-57ddb11ff56d
+2025-08-08 01:28:46 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: e54c3261-7ff6-4900-b707-8c3c61481ff5
+2025-08-08 01:28:46 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: e54c3261-7ff6-4900-b707-8c3c61481ff5
+2025-08-08 01:28:46 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:28:46 | INFO | nivel_1.busca:executar_busca:224 | ✅ Resultado em cache para busca cpf = 084.036.781-34
+2025-08-08 01:28:46 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 788cfcb1-3c1c-4ca9-afa1-cda469d8a32f concluída em 18.42s
+2025-08-08 01:28:46 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: e54c3261-7ff6-4900-b707-8c3c61481ff5
+2025-08-08 01:28:48 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: e54c3261-7ff6-4900-b707-8c3c61481ff5
+2025-08-08 01:28:50 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: ee39e626-3d9e-4bb0-aa00-0e28a1b3a491
+2025-08-08 01:28:50 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: ee39e626-3d9e-4bb0-aa00-0e28a1b3a491
+2025-08-08 01:28:50 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:28:50 | INFO | nivel_1.busca:executar_busca:224 | ✅ Resultado em cache para busca cpf = 084.036.781-34
+2025-08-08 01:28:50 | INFO | api.main:processar_busca_completa:270 | ✅ Busca f33512a7-7fe7-44eb-881f-8832f9e95253 concluída em 21.18s
+2025-08-08 01:28:50 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: ee39e626-3d9e-4bb0-aa00-0e28a1b3a491
+2025-08-08 01:28:54 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: ee39e626-3d9e-4bb0-aa00-0e28a1b3a491
+2025-08-08 01:28:56 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: 8f87157e-d0ff-4b08-91e4-da780089f5e8
+2025-08-08 01:28:56 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: 8f87157e-d0ff-4b08-91e4-da780089f5e8
+2025-08-08 01:28:56 | INFO | core.session_manager:_create_session:211 | 🔄 Tentativa 1/3 de criar sessão...
+2025-08-08 01:28:56 | INFO | nivel_1.busca:executar_busca:224 | ✅ Resultado em cache para busca cpf = 084.036.781-34
+2025-08-08 01:28:56 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 43b98d4d-c3d8-4e69-84d7-3c65d49614f0 concluída em 27.22s
+2025-08-08 01:28:56 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: 8f87157e-d0ff-4b08-91e4-da780089f5e8
+2025-08-08 01:28:59 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: 8f87157e-d0ff-4b08-91e4-da780089f5e8
+2025-08-08 01:29:01 | INFO | core.session_manager:_create_session:324 | ✅ Sessão criada com sucesso: da836725-f717-4f80-b760-c49b370d6b9a
+2025-08-08 01:29:01 | INFO | core.session_manager:_get_session_internal:140 | 🆕 Nova sessão criada: da836725-f717-4f80-b760-c49b370d6b9a
+2025-08-08 01:29:01 | INFO | nivel_1.busca:executar_busca:224 | ✅ Resultado em cache para busca cpf = 084.036.781-34
+2025-08-08 01:29:01 | INFO | api.main:processar_busca_completa:270 | ✅ Busca 5a8ec668-4013-4de2-acbf-c03fe27e7191 concluída em 32.13s
+2025-08-08 01:29:01 | INFO | core.session_manager:release_session:158 | 🔓 Fechando sessão forçadamente: da836725-f717-4f80-b760-c49b370d6b9a
+2025-08-08 01:29:03 | INFO | core.session_manager:close_session:184 | 🗑️ Sessão fechada: da836725-f717-4f80-b760-c49b370d6b9a

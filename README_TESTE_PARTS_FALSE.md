@@ -119,7 +119,6 @@ curl -X POST "http://localhost:8081/buscar" \
     "tipo_busca": "processo",
     "valor": "0508844-37.2007.8.09.0024",
     "extrair_partes_detalhadas": false,
-    "extrair_partes": true,
     "movimentacoes": true,
     "extrair_anexos": false
   }'
@@ -133,9 +132,9 @@ Execute o script de exemplos:
 ```
 
 ### Exemplos disponíveis:
-1. **Teste básico** com `extrair_partes_detalhadas=false`
-2. **Busca por CPF** com partes simples
-3. **Busca por nome** com partes simples
+1. **Teste básico** com `extrair_partes_detalhadas=false` (sem partes)
+2. **Busca por CPF** sem extração de partes
+3. **Busca por nome** sem extração de partes
 4. **Teste com limite** de movimentações
 5. **Health check** da API
 6. **Status** da API

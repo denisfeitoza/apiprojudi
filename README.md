@@ -630,6 +630,12 @@ POST /buscar
 
 ## 🚀 Deploy
 
+### **🐳 VPS EasyPanel (Recomendado)**
+1. **Configure as variáveis de ambiente** usando o arquivo `VARIAVEIS_AMBIENTE_EASYPANEL.md`
+2. **Cole o conteúdo** na seção de variáveis do EasyPanel
+3. **Substitua as credenciais** do PROJUDI
+4. **Reinicie o serviço**
+
 ### Local:
 ```bash
 python main.py

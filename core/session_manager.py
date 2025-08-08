@@ -48,22 +48,16 @@ class SessionManager:
         try:
             logger.info("🚀 Inicializando Playwright...")
             self.playwright = await async_playwright().start()
-            # Detectar sistema operacional para escolher o melhor browser
+            # Detectar sistema operacional
             import platform
             import os
             
-            # Sempre usar Chromium em modo headless (mais estável em VPS)
-            if settings.playwright_headless:
-                self.browser_type = self.playwright.chromium
-                logger.info("🌐 Usando Chromium (modo headless)")
-            elif platform.system() == "Linux":
-                # VPS Linux: usar Chromium mesmo sem headless
-                self.browser_type = self.playwright.chromium
-                logger.info("🌐 Usando Chromium (VPS Linux)")
+            # Sempre usar Chromium (requisito do usuário)
+            self.browser_type = self.playwright.chromium
+            if platform.system() == "Linux":
+                logger.info("🌐 Usando Chromium (VPS Linux - headless)")
             else:
-                # macOS/Windows: usar Firefox (mais estável)
-                self.browser_type = self.playwright.firefox
-                logger.info("🦊 Usando Firefox (macOS/Windows)")
+                logger.info("🌐 Usando Chromium (Desktop - visível)")
             
             # Instalar navegadores se necessário
             logger.info("📦 Verificando instalação dos navegadores...")
@@ -145,8 +139,8 @@ class SessionManager:
             logger.warning("⚠️ Pool de sessões cheio, aguarde...")
             return None
     
-    async def release_session(self, session_or_id):
-        """Libera uma sessão para reutilização"""
+    async def release_session(self, session_or_id, force_close: bool = False):
+        """Libera uma sessão para reutilização ou a fecha se force_close=True"""
         # Aceita tanto Session quanto session_id (string)
         if isinstance(session_or_id, str):
             session_id = session_or_id
@@ -156,9 +150,17 @@ class SessionManager:
             session_id = session.id if session else None
             
         if session and session_id in self.sessions:
-            session.is_busy = False
-            session.last_used = datetime.now()
-            logger.info(f"🔓 Sessão liberada: {session_id}")
+            if force_close:
+                logger.info(f"🔓 Fechando sessão forçadamente: {session_id}")
+                await self.close_session(session)
+            else:
+                session.is_busy = False
+                session.last_used = datetime.now()
+                logger.info(f"🔓 Sessão liberada: {session_id}")
+                
+    async def release_and_close_session(self, session_or_id):
+        """Libera e fecha uma sessão definitivamente"""
+        await self.release_session(session_or_id, force_close=True)
     
     async def close_session(self, session: Session):
         """Fecha uma sessão específica"""
@@ -214,7 +216,7 @@ class SessionManager:
                 import platform
                 import os
                 
-                # Forçar headless em VPS Linux
+                # Forçar headless em VPS Linux; Desktop segue settings (padrão visível)
                 force_headless = settings.playwright_headless
                 if platform.system() == "Linux":
                     force_headless = True
@@ -419,4 +421,5 @@ async def get_session():
     try:
         yield session
     finally:
-        await session_manager.release_session(session)
+        # Fechar a sessão definitivamente para evitar hang
+        await session_manager.release_and_close_session(session)

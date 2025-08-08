@@ -111,7 +111,17 @@ class ProjudiService:
                     )
                     
                     if dados_processo:
-                        # Converter para response
+                        # Opcional: extração detalhada de partes no final
+                        if request.extrair_partes_detalhadas:
+                            try:
+                                logger.info("🧩 Executando extração de partes detalhada (opcional) no final do fluxo...")
+                                partes_det = await processo_manager.extrair_partes_detalhadas(session)
+                                dados_processo.partes_polo_ativo = partes_det.get('polo_ativo', dados_processo.partes_polo_ativo)
+                                dados_processo.partes_polo_passivo = partes_det.get('polo_passivo', dados_processo.partes_polo_passivo)
+                                dados_processo.outras_partes = partes_det.get('outros', dados_processo.outras_partes)
+                            except Exception as e:
+                                logger.warning(f"⚠️ Falha na extração detalhada opcional: {e}")
+                                # Converter para response (partes podem ser preenchidas depois apenas via detalhado)
                         processo_detalhado = await ProjudiService._converter_dados_processo(
                             dados_processo, 
                             []  # Sem anexos por padrão
@@ -223,9 +233,21 @@ class ProjudiService:
                                             limite=3  # Limitar a 3 anexos por padrão
                                         )
                                 
-                                # Converter para response
+                                # Se solicitado, executar extração detalhada de partes no FINAL (única forma de extrair partes)
+                                if getattr(request, 'extrair_partes_detalhadas', False):
+                                    try:
+                                        logger.info("🧩 Executando extração de partes detalhada (opcional) no final do fluxo...")
+                                        partes_det = await processo_manager.extrair_partes_detalhadas(session)
+                                        # Substituir partes do dados_processo sem alterar restante da lógica
+                                        dados_processo.partes_polo_ativo = partes_det.get('polo_ativo', dados_processo.partes_polo_ativo)
+                                        dados_processo.partes_polo_passivo = partes_det.get('polo_passivo', dados_processo.partes_polo_passivo)
+                                        dados_processo.outras_partes = partes_det.get('outros', dados_processo.outras_partes)
+                                    except Exception as e:
+                                        logger.warning(f"⚠️ Falha na extração detalhada opcional: {e}")
+
+                                # Converter para response (partes podem ter sido preenchidas somente se detalhado estiver ativo)
                                 processo_detalhado = await ProjudiService._converter_dados_processo(
-                                    dados_processo, 
+                                    dados_processo,
                                     anexos_processados
                                 )
                                 processos_detalhados.append(processo_detalhado)

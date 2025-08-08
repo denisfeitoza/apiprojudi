@@ -220,6 +220,10 @@ class ProcessoManager:
     async def extrair_partes_envolvidas(self, session: Session) -> Dict[str, List[ParteEnvolvida]]:
         """Extrai partes envolvidas do processo (método público)"""
         return await self._extrair_partes_envolvidas(session)
+
+    async def extrair_partes_detalhadas(self, session: Session) -> Dict[str, List[ParteEnvolvida]]:
+        """Extrai partes no novo modo detalhado (opcional)."""
+        return await self._extrair_partes_navegacao_detalhada(session)
     
     async def buscar_processo_especifico(self, session: Session, numero_processo: str, limite_movimentacoes: Optional[int] = None) -> Optional[DadosProcesso]:
         """Busca um processo específico diretamente no nível 2 (contorna nível 1)"""
@@ -285,9 +289,6 @@ class ProcessoManager:
             for mov in movimentacoes:
                 mov.numero_processo = processo.numero
             
-            # Extrair partes envolvidas
-            partes = await self._extrair_partes_envolvidas(session)
-            
             # Criar objeto com dados completos
             dados = DadosProcesso(
                 numero=processo.numero,
@@ -300,12 +301,12 @@ class ProcessoManager:
                 orgao_julgador=dados_basicos.get('orgao_julgador', ''),
                 id_acesso=dados_basicos.get('id_acesso', ''),
                 movimentacoes=movimentacoes,
-                partes_polo_ativo=partes.get('polo_ativo', []),
-                partes_polo_passivo=partes.get('polo_passivo', []),
-                outras_partes=partes.get('outros', [])
+                partes_polo_ativo=[],
+                partes_polo_passivo=[],
+                outras_partes=[]
             )
             
-            logger.info(f"✅ Dados extraídos: {len(movimentacoes)} movimentações, {len(dados.partes_polo_ativo + dados.partes_polo_passivo + dados.outras_partes)} partes")
+            logger.info(f"✅ Dados extraídos: {len(movimentacoes)} movimentações")
             return dados
             
         except Exception as e:
@@ -1399,6 +1400,153 @@ class ProcessoManager:
         except Exception as e:
             logger.error(f"❌ Erro ao extrair partes envolvidas: {e}")
             return {'polo_ativo': [], 'polo_passivo': [], 'outros': []}
+
+    # =========================
+    # NOVO MODO OPCIONAL (detalhado)
+    # =========================
+    async def _extrair_partes_navegacao_detalhada(self, session: Session) -> Dict[str, List[ParteEnvolvida]]:
+        """Navega por ProcessoParte?PaginaAtual=6 (aguarda 1s) → ProcessoParte?PaginaAtual=2 e extrai partes clicando em 'Editar'."""
+        try:
+            logger.info("🚀 Extração detalhada de partes iniciada")
+            partes: Dict[str, List[ParteEnvolvida]] = {
+                'polo_ativo': [],
+                'polo_passivo': [],
+                'outros': []
+            }
+            # Passo 1: página 6 e aguardo
+            try:
+                await session.page.goto(f"{self.base_url}/ProcessoParte?PaginaAtual=6", timeout=15000, wait_until='domcontentloaded')
+            except Exception as e:
+                logger.warning(f"⚠️ Falha ao abrir PaginaAtual=6: {e}")
+            await asyncio.sleep(1)
+            # Passo 2: página 2 para extração
+            await session.page.goto(f"{self.base_url}/ProcessoParte?PaginaAtual=2", timeout=15000, wait_until='domcontentloaded')
+            await asyncio.sleep(1)
+            fieldsets_config = {
+                'polo_ativo': 'fieldset.VisualizaDados:nth-child(6)',
+                'polo_passivo': 'fieldset.VisualizaDados:nth-child(7)',
+                'outros': 'fieldset.VisualizaDados:nth-child(8)'
+            }
+            for tipo_parte in ['polo_ativo', 'polo_passivo', 'outros']:
+                try:
+                    extraidas = await self._extrair_partes_fieldset_detalhado(session, tipo_parte)
+                    partes[tipo_parte].extend(extraidas)
+                    logger.info(f"✅ {len(extraidas)} partes extraídas em {tipo_parte} (detalhado)")
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao extrair {tipo_parte} (detalhado): {e}")
+            logger.info(f"🎯 Extração detalhada concluída: {sum(len(v) for v in partes.values())} partes")
+            return partes
+        except Exception as e:
+            logger.error(f"❌ Erro na extração detalhada: {e}")
+            return {'polo_ativo': [], 'polo_passivo': [], 'outros': []}
+
+    async def _extrair_partes_fieldset_detalhado(self, session: Session, tipo_parte: str) -> List[ParteEnvolvida]:
+        """Percorre botões 'Editar' do fieldset para coletar dados completos das partes."""
+        partes_extraidas: List[ParteEnvolvida] = []
+        fieldsets_config = {
+            'polo_ativo': 'fieldset.VisualizaDados:nth-child(6)',
+            'polo_passivo': 'fieldset.VisualizaDados:nth-child(7)',
+            'outros': 'fieldset.VisualizaDados:nth-child(8)'
+        }
+        try:
+            seletor_fieldset = fieldsets_config.get(tipo_parte)
+            if not seletor_fieldset:
+                return partes_extraidas
+            seletores_botoes = [
+                'button.imgIcons[title*="Editar"]',
+                'button[onclick*="PassoEditar"]',
+                'button.imgIcons[onclick*="PassoEditar"]',
+                'button[title*="Editar"]'
+            ]
+            # descobrir qual seletor encontra botões
+            seletor_usado = None
+            for candidato in seletores_botoes:
+                fs = await session.page.query_selector(seletor_fieldset)
+                if not fs:
+                    break
+                btns = await fs.query_selector_all(candidato)
+                if btns:
+                    seletor_usado = candidato
+                    break
+            if not seletor_usado:
+                logger.info(f"ℹ️ Nenhum botão 'Editar' encontrado em {tipo_parte}")
+                return partes_extraidas
+            i = 0
+            while True:
+                fs = await session.page.query_selector(seletor_fieldset)
+                if not fs:
+                    break
+                btns = await fs.query_selector_all(seletor_usado)
+                if i >= len(btns):
+                    break
+                botao = btns[i]
+                try:
+                    if not (await botao.is_visible()) or not (await botao.is_enabled()):
+                        i += 1
+                        continue
+                    await botao.click()
+                    await asyncio.sleep(2)
+                    parte = await self._extrair_dados_edicao_parte(session.page, tipo_parte)
+                    if parte:
+                        partes_extraidas.append(parte)
+                    await session.page.go_back(timeout=10000)
+                    await asyncio.sleep(2)
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao processar botão {i+1} ({tipo_parte}): {e}")
+                    try:
+                        await session.page.go_back(timeout=5000)
+                        await asyncio.sleep(1)
+                    except Exception:
+                        pass
+                i += 1
+        except Exception as e:
+            logger.error(f"❌ Erro no fieldset detalhado {tipo_parte}: {e}")
+        return partes_extraidas
+
+    async def _extrair_dados_edicao_parte(self, page: Page, tipo_parte: str) -> Optional[ParteEnvolvida]:
+        """Extrai dados detalhados da página de edição de uma parte (nome, documento, contato e endereço)."""
+        try:
+            await page.wait_for_load_state('domcontentloaded')
+            async def extrair_valor(seletores: List[str]) -> str:
+                for sel in seletores:
+                    try:
+                        el = await page.query_selector(sel)
+                        if el:
+                            val = await el.get_attribute('value')
+                            if val and val.strip():
+                                return val.strip()
+                            txt = await el.inner_text()
+                            if txt and txt.strip():
+                                return txt.strip()
+                    except Exception:
+                        continue
+                return ""
+            nome = await extrair_valor(['input[name="Nome"]','input[name*="Nome"]','input[id*="Nome"]','#Nome'])
+            documento = await extrair_valor(['input[name="Cpf"]','input[name="Cnpj"]','input[name="CNPJ"]','input[id="Cpf"]','input[id="Cnpj"]','input[id="CNPJ"]','input[name*="CPF"]','input[name*="CNPJ"]','input[name*="Cnpj"]'])
+            email = await extrair_valor(['input[name*="Email"]','input[id*="Email"]','input[type="email"]'])
+            telefone = await extrair_valor(['input[name*="Telefone"]','input[id*="Telefone"]','input[name*="Fone"]'])
+            logradouro = await extrair_valor(['input[name="Logradouro"]','input[name*="Logradouro"]'])
+            numero = await extrair_valor(['input[name="Numero"]','input[name*="Numero"]'])
+            complemento = await extrair_valor(['input[name="Complemento"]','input[name*="Complemento"]'])
+            bairro = await extrair_valor(['input[name="Bairro"]','input[name*="Bairro"]'])
+            cidade = await extrair_valor(['input[name="Cidade"]','input[name*="Cidade"]'])
+            uf = await extrair_valor(['input[name="UF"]','select[name="UF"]','input[name*="UF"]'])
+            cep = await extrair_valor(['input[name="CEP"]','input[name*="CEP"]'])
+            campos_end = [v for v in [logradouro, numero, complemento, bairro, cidade, uf, f"CEP: {cep}" if cep else ""] if v]
+            endereco = ' - '.join(campos_end)
+            if not nome or len(nome.strip()) < 3:
+                return None
+            return ParteEnvolvida(
+                nome=nome.strip(),
+                tipo={'polo_ativo':'Polo Ativo','polo_passivo':'Polo Passivo'}.get(tipo_parte,'Outras Partes'),
+                documento=documento.strip() if documento else "",
+                endereco=endereco.strip() if endereco else "",
+                telefone=telefone.strip() if telefone else "",
+                email=email.strip() if email else ""
+            )
+        except Exception as e:
+            logger.error(f"❌ Erro ao extrair dados de edição: {e}")
+            return None
     
     async def _extrair_partes_da_pagina(self, page: Page) -> Dict[str, List[ParteEnvolvida]]:
         """Extrai partes de uma página específica com múltiplas estratégias inteligentes"""

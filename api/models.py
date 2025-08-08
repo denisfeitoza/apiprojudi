@@ -26,7 +26,7 @@ class BuscaRequestN8N(BaseModel):
         if "parameters" in self.bodyParameters:
             for param in self.bodyParameters["parameters"]:
                 # Converter valores booleanos
-                if param.name in ["movimentacoes", "extrair_anexos", "extrair_partes"]:
+                if param.name in ["movimentacoes", "extrair_anexos", "extrair_partes", "extrair_partes_detalhadas"]:
                     params[param.name] = param.value.lower() in ["true", "1", "yes", "sim"]
                 # Converter valores numéricos
                 elif param.name == "limite_movimentacoes" and param.value:
@@ -42,6 +42,7 @@ class BuscaRequestN8N(BaseModel):
             "movimentacoes": True,
             "extrair_anexos": False,
             "extrair_partes": True,
+            "extrair_partes_detalhadas": False,
             "limite_movimentacoes": None,
         }
         
@@ -57,6 +58,7 @@ class BuscaRequest(BaseModel):
     limite_movimentacoes: Optional[int] = Field(default=None, description="Limite de movimentações a extrair")
     extrair_anexos: bool = Field(default=False, description="Se deve extrair anexos")
     extrair_partes: bool = Field(default=True, description="Se deve extrair partes envolvidas")
+    extrair_partes_detalhadas: bool = Field(default=False, description="Usar novo modo detalhado de extração de partes (opcional)")
     movimentacoes: bool = Field(default=True, description="Se deve extrair movimentações")
     
     # Credenciais customizadas (opcional - usa .env como fallback)

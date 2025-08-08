@@ -8,7 +8,7 @@ import os
 import uuid
 import time
 from contextlib import asynccontextmanager
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from datetime import datetime, timedelta
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
@@ -550,11 +550,15 @@ async def buscar_processo(request: BuscaRequest, background_tasks: BackgroundTas
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/buscar-n8n", response_model=BuscaResponse)
-async def buscar_processo_n8n(request: BuscaRequestN8N, background_tasks: BackgroundTasks):
-    """Executa busca de processo com formato N8N"""
+async def buscar_processo_n8n(request: Union[BuscaRequestN8N, BuscaRequest], background_tasks: BackgroundTasks):
+    """Executa busca de processo com formato N8N (aceita ambos os formatos)"""
     try:
-        # Converter request N8N para formato padrão
-        busca_request = request.to_busca_request()
+        # Se for BuscaRequestN8N (formato antigo), converter
+        if hasattr(request, 'bodyParameters'):
+            busca_request = request.to_busca_request()
+        else:
+            # Já é BuscaRequest (formato direto do N8N)
+            busca_request = request
         
         # Usar o endpoint padrão
         return await buscar_processo(busca_request, background_tasks)

@@ -1388,8 +1388,8 @@ USE_REDIS=true
 REDIS_URL=redis://localhost:6379
 
 # Configurações PROJUDI (já configuradas)
-PROJUDI_USER=34930230144
-PROJUDI_PASS=Joaquim1*
+PROJUDI_USER=
+PROJUDI_PASS=
 DEFAULT_SERVENTIA=Advogados - OAB/Matrícula: 25348-N-GO
 ```
 

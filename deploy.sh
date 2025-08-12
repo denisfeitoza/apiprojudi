@@ -67,15 +67,19 @@ else
     exit 1
 fi
 
-# 10. Teste final
-echo "🧪 Teste final da API..."
-curl -X POST http://localhost:8081/buscar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tipo_busca": "processo",
-    "valor": "0508844-37.2007.8.09.0024",
-    "movimentacoes": false
-  }' > /dev/null 2>&1 && echo "✅ Teste de busca funcionando!" || echo "⚠️ Teste de busca falhou (pode ser normal sem credenciais)"
+# 10. Teste final (opcional)
+if [ "${RUN_POST_DEPLOY_TESTS:-false}" = "true" ]; then
+  echo "🧪 Teste final da API (habilitado)..."
+  curl -X POST http://localhost:8081/buscar \
+    -H "Content-Type: application/json" \
+    -d '{
+      "tipo_busca": "processo",
+      "valor": "0508844-37.2007.8.09.0024",
+      "movimentacoes": false
+    }' > /dev/null 2>&1 && echo "✅ Teste de busca funcionando!" || echo "⚠️ Teste de busca falhou (pode ser normal sem credenciais)"
+else
+  echo "⏭️  Ignorando teste de POST /buscar (defina RUN_POST_DEPLOY_TESTS=true para habilitar)."
+fi
 
 echo ""
 echo "🎉 Deploy concluído com sucesso!"

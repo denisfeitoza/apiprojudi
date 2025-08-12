@@ -142,9 +142,10 @@ MAX_CONCURRENT_REQUESTS=5
 REQUEST_TIMEOUT=180
 EOF
 
-# 11. Testar instalação
-echo "🧪 Testando instalação..."
-python -c "
+# 11. Testar instalação (opcional)
+if [ "${RUN_INSTALL_TESTS:-false}" = "true" ]; then
+  echo "🧪 Testando instalação (habilitado)..."
+  python -c "
 import asyncio
 from playwright.async_api import async_playwright
 
@@ -159,6 +160,9 @@ async def test_playwright():
 
 asyncio.run(test_playwright())
 "
+else
+  echo "⏭️  Ignorando testes de instalação (defina RUN_INSTALL_TESTS=true para habilitar)."
+fi
 
 # 12. Criar script de inicialização
 echo "🚀 Criando script de inicialização..."

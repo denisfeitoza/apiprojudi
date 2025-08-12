@@ -556,24 +556,40 @@ async def buscar_processo(request: BuscaRequest, background_tasks: BackgroundTas
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/buscar-n8n", response_model=BuscaResponse, dependencies=[Depends(_require_api_key)])
-async def buscar_processo_n8n(request: Union[BuscaRequestN8N, BuscaRequest], background_tasks: BackgroundTasks):
-    """Executa busca de processo com formato N8N (aceita ambos os formatos)"""
+async def buscar_processo_n8n_legacy(request: Union[BuscaRequestN8N, BuscaRequest], background_tasks: BackgroundTasks):
+    """Endpoint legado para N8N (formato antigo). Pode ser desativado via env."""
+    if not settings.allow_legacy_n8n:
+        raise HTTPException(status_code=410, detail="Endpoint /buscar-n8n descontinuado. Use /buscar-n8n-v2")
+
     try:
-        # Se for BuscaRequestN8N (formato antigo), converter
         if hasattr(request, 'bodyParameters'):
             busca_request = request.to_busca_request()
         else:
-            # Já é BuscaRequest (formato direto do N8N)
             busca_request = request
-        
-        # Usar o endpoint padrão
         return await buscar_processo(busca_request, background_tasks)
-        
     except ValueError as e:
         logger.error(f"❌ Erro de validação N8N: {e}")
         raise HTTPException(status_code=400, detail=f"Erro de validação: {str(e)}")
     except Exception as e:
         logger.error(f"❌ Erro no endpoint /buscar-n8n: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/buscar-n8n-v2", response_model=BuscaResponse, dependencies=[Depends(_require_api_key)])
+async def buscar_processo_n8n_v2(request: Union[BuscaRequestN8N, BuscaRequest], background_tasks: BackgroundTasks):
+    """Endpoint N8N v2. Mesmo comportamento, rota diferente para evitar chamadas legadas."""
+    try:
+        if hasattr(request, 'bodyParameters'):
+            busca_request = request.to_busca_request()
+        else:
+            busca_request = request
+
+        return await buscar_processo(busca_request, background_tasks)
+    except ValueError as e:
+        logger.error(f"❌ Erro de validação N8N v2: {e}")
+        raise HTTPException(status_code=400, detail=f"Erro de validação: {str(e)}")
+    except Exception as e:
+        logger.error(f"❌ Erro no endpoint /buscar-n8n-v2: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/buscar-multiplo", response_model=BuscaMultiplaResponse, dependencies=[Depends(_require_api_key)])

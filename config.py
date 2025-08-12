@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     # Configurações Redis
     redis_url: str = Field(default="redis://localhost:6379", env="REDIS_URL")
     use_redis: bool = Field(default=True, env="USE_REDIS")
+    # Compatibilidade legada
+    allow_legacy_n8n: bool = Field(default=False, env="ALLOW_LEGACY_N8N")
     
     # Configurações de arquivos
     temp_dir: str = Field(default="./temp", env="TEMP_DIR")

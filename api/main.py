@@ -19,7 +19,7 @@ from config import settings
 from core.session_manager import session_manager, get_session
 from core.cache_manager import cache_manager
 from core.concurrency_manager import concurrency_manager
-from nivel_1.busca import busca_manager, TipoBusca, ResultadoBusca
+from nivel_1.busca import busca_manager, TipoBusca, ResultadoBusca, LoginManager
 from nivel_2.processo import processo_manager, DadosProcesso
 from nivel_3.anexos import anexos_manager
 
@@ -187,7 +187,13 @@ class ProjudiService:
                 # Se o resultado veio de cache, precisamos posicionar a UI na página de resultados
                 try:
                     if getattr(resultado_busca, 'from_cache', False) and resultado_busca.processos:
-                        await session.page.goto("https://projudi.tjgo.jus.br/BuscaProcesso", 
+                        # Garantir login antes de reposicionar a UI quando o resultado vier do cache (VPS com Redis)
+                        try:
+                            await LoginManager.fazer_login(session)
+                        except Exception as _login_err:
+                            logger.warning(f"⚠️ Falha no login antes do reposicionamento pós-cache: {_login_err}")
+
+                        await session.page.goto("https://projudi.tjgo.jus.br/BuscaProcesso",
                                                wait_until='domcontentloaded', timeout=60000)
                         if request.tipo_busca == "cpf":
                             await busca_manager._buscar_por_cpf(session.page, request.valor)

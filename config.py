@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     port: int = Field(default=8081, env="PORT")
     
     # Configurações do PROJUDI
-    projudi_user: str = Field(default="34930230144", env="PROJUDI_USER")
-    projudi_pass: str = Field(default="Joaquim1*", env="PROJUDI_PASS")
+    projudi_user: str = Field(default="*", env="PROJUDI_USER")
+    projudi_pass: str = Field(default="*", env="PROJUDI_PASS")
     default_serventia: str = Field(
         default="Advogados - OAB/Matrícula: 25348-N-GO", 
         env="DEFAULT_SERVENTIA"

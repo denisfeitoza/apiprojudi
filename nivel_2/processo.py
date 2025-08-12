@@ -307,6 +307,14 @@ class ProcessoManager:
             )
             
             logger.info(f"✅ Dados extraídos: {len(movimentacoes)} movimentações")
+
+            # Retornar à página de busca para estabilizar a próxima iteração
+            try:
+                await session.page.goto(f"{self.base_url}/BuscaProcesso", timeout=15000)
+                await session.page.wait_for_load_state('domcontentloaded', timeout=15000)
+            except Exception:
+                pass
+
             return dados
             
         except Exception as e:

@@ -184,6 +184,21 @@ class ProjudiService:
                     for p in resultado_busca.processos
                 ]
                 
+                # Se o resultado veio de cache, precisamos posicionar a UI na página de resultados
+                try:
+                    if getattr(resultado_busca, 'from_cache', False) and resultado_busca.processos:
+                        await session.page.goto("https://projudi.tjgo.jus.br/BuscaProcesso", 
+                                               wait_until='domcontentloaded', timeout=60000)
+                        if request.tipo_busca == "cpf":
+                            await busca_manager._buscar_por_cpf(session.page, request.valor)
+                        elif request.tipo_busca == "nome":
+                            await busca_manager._buscar_por_nome(session.page, request.valor)
+                        elif request.tipo_busca == "processo":
+                            await busca_manager._buscar_por_processo(session.page, request.valor)
+                        await asyncio.sleep(1)
+                except Exception as _cache_nav_err:
+                    logger.warning(f"⚠️ Não foi possível posicionar UI após cache: {_cache_nav_err}")
+
                 processos_detalhados = []
                 
                 # Nível 2 e 3: Processar cada processo encontrado (se movimentacoes = True)

@@ -108,8 +108,8 @@ class ProcessoManager:
             
             # Estratégia 1: Encontrar o processo correto na tabela pelo número
             try:
-                # Aguardar a tabela carregar - timeout reduzido
-                await session.page.wait_for_selector('table#Tabela', timeout=15000)
+                # Aguardar a tabela carregar - timeout reduzido e visível
+                await session.page.wait_for_selector('table#Tabela', state='visible', timeout=20000)
                 
                 # Procurar especificamente nas linhas do tbody
                 linhas = await session.page.query_selector_all('table#Tabela tbody tr')
@@ -173,7 +173,7 @@ class ProcessoManager:
                     return True
             
             # Estratégia 3: Fallback - primeiro botão editar disponível
-            btn_editar = await session.page.query_selector('button[name="formLocalizarimgEditar"]')
+            btn_editar = await session.page.query_selector('table#Tabela button[name="formLocalizarimgEditar"]')
             if btn_editar:
                 await btn_editar.click()
                 await session.page.wait_for_load_state('networkidle', timeout=15000)
@@ -250,8 +250,8 @@ class ProcessoManager:
             await session.page.wait_for_load_state('networkidle', timeout=15000)
             
             # Verificar se foi redirecionado diretamente para o processo
-            content = await session.page.content()
-            if "corpo_dados_processo" in content:
+            try:
+                await session.page.wait_for_selector('#corpo_dados_processo, span#span_proc_numero', timeout=5000)
                 logger.info(f"✅ Processo {numero_processo} encontrado diretamente")
                 
                 # Criar objeto ProcessoEncontrado temporário
@@ -266,7 +266,7 @@ class ProcessoManager:
                 
                 # Extrair dados completos com limite de movimentações
                 return await self.extrair_dados_processo(session, processo_temp, limite_movimentacoes)
-            else:
+            except Exception:
                 logger.warning(f"⚠️ Processo {numero_processo} não encontrado ou não acessível")
                 return None
                 

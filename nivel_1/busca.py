@@ -5,6 +5,7 @@ Responsável por buscas por CPF, Nome e Processo
 """
 
 import asyncio
+import time
 import re
 from typing import Dict, List, Optional, Literal
 from dataclasses import dataclass
@@ -42,6 +43,7 @@ class ResultadoBusca:
     sucesso: bool
     mensagem: str = ""
     tempo_execucao: float = 0.0
+    from_cache: bool = False
 
 class LoginManager:
     """Gerenciador de login do PROJUDI"""
@@ -65,7 +67,11 @@ class LoginManager:
             await session.page.goto(login_url, timeout=120000)
             
             # Aguardar página carregar
-            await session.page.wait_for_load_state('networkidle', timeout=12000)
+            try:
+                await session.page.wait_for_load_state('networkidle', timeout=12000)
+            except Exception:
+                # Em alguns momentos a página não atinge networkidle; seguir em frente
+                await session.page.wait_for_load_state('domcontentloaded', timeout=12000)
             
             # Verificar se já está logado
             if await LoginManager._ja_esta_logado(session.page):
@@ -86,7 +92,10 @@ class LoginManager:
             await asyncio.sleep(1)  # Aguardo após clique
             
             # Aguardar redirecionamento
-            await session.page.wait_for_load_state('networkidle', timeout=12000)
+            try:
+                await session.page.wait_for_load_state('networkidle', timeout=12000)
+            except Exception:
+                await session.page.wait_for_load_state('domcontentloaded', timeout=12000)
             
             # Verificar se apareceu a página de seleção de serventia
             if await LoginManager._selecionar_serventia(session.page):
@@ -243,7 +252,8 @@ class BuscaManager:
                     processos=processos_cache,
                     sucesso=cached_result.get('sucesso', False),
                     mensagem=cached_result.get('mensagem', ''),
-                    tempo_execucao=0.1  # Cache é muito rápido
+                    tempo_execucao=0.1,  # Cache é muito rápido
+                    from_cache=True
                 )
             
             # SEMPRE fazer login antes de cada busca para garantir sessão válida
@@ -262,7 +272,10 @@ class BuscaManager:
             # Navegar para página de busca correta (URL descoberta na análise)
             busca_url = f"{self.base_url}/BuscaProcesso"
             await session.page.goto(busca_url, timeout=30000)
-            await session.page.wait_for_load_state('networkidle', timeout=30000)
+            try:
+                await session.page.wait_for_load_state('networkidle', timeout=30000)
+            except Exception:
+                await session.page.wait_for_load_state('domcontentloaded', timeout=30000)
             logger.info(f"✅ Página de busca acessada: {busca_url}")
             
             # Executar busca específica

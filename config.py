@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False, env="DEBUG")
     host: str = Field(default="0.0.0.0", env="HOST")
     port: int = Field(default=8081, env="PORT")
+    # Segurança e logging
+    api_key: Optional[str] = Field(default=None, env="API_KEY")
+    disable_access_log: bool = Field(default=False, env="DISABLE_ACCESS_LOG")
     
     # Configurações do PROJUDI
     projudi_user: str = Field(default="*", env="PROJUDI_USER")

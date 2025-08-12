@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from typing import Dict, List, Optional, Union
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
@@ -503,7 +503,13 @@ async def health_check():
             services={"error": str(e)}
         )
 
-@app.post("/buscar", response_model=BuscaResponse)
+def _require_api_key(x_api_key: Optional[str] = Header(default=None)):
+    if settings.api_key:
+        if not x_api_key or x_api_key != settings.api_key:
+            raise HTTPException(status_code=401, detail="API key inválida ou ausente")
+
+
+@app.post("/buscar", response_model=BuscaResponse, dependencies=[Depends(_require_api_key)])
 async def buscar_processo(request: BuscaRequest, background_tasks: BackgroundTasks):
     """Executa busca de processo"""
     try:
@@ -549,7 +555,7 @@ async def buscar_processo(request: BuscaRequest, background_tasks: BackgroundTas
         logger.error(f"❌ Erro no endpoint /buscar: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/buscar-n8n", response_model=BuscaResponse)
+@app.post("/buscar-n8n", response_model=BuscaResponse, dependencies=[Depends(_require_api_key)])
 async def buscar_processo_n8n(request: Union[BuscaRequestN8N, BuscaRequest], background_tasks: BackgroundTasks):
     """Executa busca de processo com formato N8N (aceita ambos os formatos)"""
     try:
@@ -570,7 +576,7 @@ async def buscar_processo_n8n(request: Union[BuscaRequestN8N, BuscaRequest], bac
         logger.error(f"❌ Erro no endpoint /buscar-n8n: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/buscar-multiplo", response_model=BuscaMultiplaResponse)
+@app.post("/buscar-multiplo", response_model=BuscaMultiplaResponse, dependencies=[Depends(_require_api_key)])
 async def buscar_multiplo(request: BuscaMultiplaRequest):
     """Executa múltiplas buscas"""
     try:

@@ -31,7 +31,7 @@ def main():
         port=settings.port,
         reload=settings.debug,
         log_level="info" if not settings.debug else "debug",
-        access_log=True
+        access_log=not settings.disable_access_log
     )
 
 if __name__ == "__main__":
